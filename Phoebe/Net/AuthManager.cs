@@ -199,6 +199,7 @@ namespace Toggl.Phoebe.Net
             NoUserMode = true;
             var client = ServiceContainer.Resolve<ITogglClient> ();
             var usr =  new UserJson () {
+                Id = 100,
                 Name = "test",
                 StartOfWeek = DayOfWeek.Monday,
                 Locale = "",
