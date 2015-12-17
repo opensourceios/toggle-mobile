@@ -4,6 +4,7 @@ namespace Toggl.Phoebe.Net
     public enum AuthChangeReason {
         Logout,
         Login,
-        Signup
+        Signup,
+        NoUser
     }
 }

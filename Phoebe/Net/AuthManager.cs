@@ -194,6 +194,27 @@ namespace Toggl.Phoebe.Net
             }), AuthChangeReason.Signup, AccountCredentials.Google);
         }
 
+        public Task<AuthResult> SetupNoUserAsync ()
+        {
+            NoUserMode = true;
+            var client = ServiceContainer.Resolve<ITogglClient> ();
+            var usr =  new UserJson () {
+                Name = "test",
+                StartOfWeek = DayOfWeek.Monday,
+                Locale = "",
+                Email = "nouser@toggl.com",
+                Password = "no-password",
+                Timezone = Time.TimeZoneId,
+                DefaultWorkspaceId = 1000
+            };
+            return AuthenticateAsync (() => UserTask (usr), AuthChangeReason.NoUser, AccountCredentials.NoUser);
+        }
+
+        private async Task<UserJson> UserTask (UserJson user)
+        {
+            return user;
+        }
+
         public void Forget ()
         {
             if (!IsAuthenticated) {
@@ -227,7 +248,22 @@ namespace Toggl.Phoebe.Net
 
         public bool IsAuthenticating { get; private set; }
 
-        public bool IsAuthenticated { get; private set; }
+        private bool noUserMode;
+        public static readonly string PropertyNoUserMode = GetPropertyName ((m) => m.NoUserMode);
+
+        public bool NoUserMode
+        {
+            get { return noUserMode; }
+            private set {
+                if (noUserMode == value) {
+                    return;
+                }
+
+                ChangePropertyAndNotify (PropertyNoUserMode, delegate {
+                    noUserMode = value;
+                });
+            }
+        }
 
         public UserData User { get; private set; }
 
