@@ -51,7 +51,8 @@ namespace Toggl.Phoebe.Net
 
         public async void Run (SyncMode mode = SyncMode.Full)
         {
-            if (!ServiceContainer.Resolve<AuthManager> ().IsAuthenticated) {
+            var authManager = ServiceContainer.Resolve<AuthManager> ();
+            if (!authManager.IsAuthenticated) {
                 return;
             }
             if (IsRunning) {
@@ -81,7 +82,9 @@ namespace Toggl.Phoebe.Net
 
             try {
                 // Make sure that the RunInBackground is actually started on a background thread
-                LastRun = await await Task.Factory.StartNew (() => RunInBackground (mode, LastRun));
+                if(!authManager.NoUserMode) {
+                    LastRun = await await Task.Factory.StartNew (() => RunInBackground (mode, LastRun));
+                }
             } finally {
                 IsRunning = false;
                 subscriptionDataChange = bus.Subscribe<DataChangeMessage> (OnDataChange);
@@ -168,6 +171,9 @@ namespace Toggl.Phoebe.Net
 
         private static async Task<DateTime> PullChanges (DateTime? lastRun)
         {
+            if(ServiceContainer.Resolve<AuthManager> ().NoUserMode) {
+                return DateTime.Now;
+            }
             var client = ServiceContainer.Resolve<ITogglClient> ();
             var store = ServiceContainer.Resolve<IDataStore> ();
             var log = ServiceContainer.Resolve<ILogger> ();
@@ -253,6 +259,9 @@ namespace Toggl.Phoebe.Net
 
         private static async Task<bool> PushChanges ()
         {
+            if(ServiceContainer.Resolve<AuthManager> ().NoUserMode){
+                return true;
+            }
             var log = ServiceContainer.Resolve<ILogger> ();
             var hasErrors = false;
 
