@@ -82,7 +82,7 @@ namespace Toggl.Phoebe.Net
 
             try {
                 // Make sure that the RunInBackground is actually started on a background thread
-                if(!authManager.NoUserMode) {
+                if (!authManager.OfflineMode) {
                     LastRun = await await Task.Factory.StartNew (() => RunInBackground (mode, LastRun));
                 }
             } finally {
@@ -171,7 +171,7 @@ namespace Toggl.Phoebe.Net
 
         private static async Task<DateTime> PullChanges (DateTime? lastRun)
         {
-            if(ServiceContainer.Resolve<AuthManager> ().NoUserMode) {
+            if (ServiceContainer.Resolve<AuthManager> ().OfflineMode) {
                 return DateTime.Now;
             }
             var client = ServiceContainer.Resolve<ITogglClient> ();
@@ -259,7 +259,7 @@ namespace Toggl.Phoebe.Net
 
         private static async Task<bool> PushChanges ()
         {
-            if(ServiceContainer.Resolve<AuthManager> ().NoUserMode){
+            if (ServiceContainer.Resolve<AuthManager> ().OfflineMode) {
                 return true;
             }
             var log = ServiceContainer.Resolve<ILogger> ();

@@ -6,6 +6,8 @@ namespace Toggl.Phoebe.Data
     {
         Guid? UserId { get; set; }
 
+        bool OfflineMode { get; set; }
+
         string ApiToken { get; set; }
 
         DateTime? SyncLastRun { get; set; }

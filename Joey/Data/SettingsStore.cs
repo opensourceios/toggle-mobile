@@ -16,6 +16,7 @@ namespace Toggl.Joey.Data
     {
         private const string PreferenceName = "togglSettings";
         private const string PhoebeUserIdKey = "phoebeUserId";
+        private const string PhoebeOfflineModeKey = "phoebeOfflineMode";
         private const string PhoebeApiTokenKey = "phoebeApiToken";
         private const string PhoebeSyncLastRunKey = "phoebeSyncLastRun";
         private const string PhoebeUseDefaultTagKey = "phoebeUseDefaultTag";
@@ -162,6 +163,17 @@ namespace Toggl.Joey.Data
             set {
                 SetGuid (PhoebeUserIdKey, value);
                 OnSettingChanged (PropertyUserId);
+            }
+        }
+
+        public static readonly string PropertyOfflineMode = GetPropertyName (s => s.OfflineMode);
+
+        public bool OfflineMode
+        {
+            get { return GetInt (PhoebeOfflineModeKey) == 1; }
+            set {
+                SetInt (PhoebeOfflineModeKey, value ? 1 : 0);
+                OnSettingChanged (PropertyOfflineMode);
             }
         }
 

@@ -42,8 +42,10 @@ namespace Toggl.Phoebe.Net
                     ReloadUser ();
                 }
                 Token = credStore.ApiToken;
-                IsAuthenticated = !String.IsNullOrEmpty (Token);
+                OfflineMode = credStore.OfflineMode;
+                IsAuthenticated = !String.IsNullOrEmpty (Token) || OfflineMode;
             } catch (ArgumentException) {
+
                 // When data is corrupt and cannot find user
                 credStore.UserId = null;
                 credStore.ApiToken = null;
@@ -126,9 +128,11 @@ namespace Toggl.Phoebe.Net
                 var credStore = ServiceContainer.Resolve<ISettingsStore> ();
                 credStore.UserId = userData.Id;
                 credStore.ApiToken = userJson.ApiToken;
+                credStore.OfflineMode = userData.Name == "offlineUser";
 
                 User = userData;
                 Token = userJson.ApiToken;
+                OfflineMode = userData.Name == "offlineUser";
                 IsAuthenticated = true;
 
                 ServiceContainer.Resolve<MessageBus> ().Send (
@@ -196,11 +200,11 @@ namespace Toggl.Phoebe.Net
 
         public Task<AuthResult> SetupNoUserAsync ()
         {
-            NoUserMode = true;
+            OfflineMode = true;
             var client = ServiceContainer.Resolve<ITogglClient> ();
             var usr =  new UserJson () {
                 Id = 100,
-                Name = "test",
+                Name = "offlineUser",
                 StartOfWeek = DayOfWeek.Monday,
                 Locale = "",
                 Email = "nouser@toggl.com",
@@ -249,19 +253,19 @@ namespace Toggl.Phoebe.Net
 
         public bool IsAuthenticating { get; private set; }
 
-        private bool noUserMode;
-        public static readonly string PropertyNoUserMode = GetPropertyName ((m) => m.NoUserMode);
+        private bool offlineMode;
+        public static readonly string PropertyOfflineMode = GetPropertyName ((m) => m.OfflineMode);
 
-        public bool NoUserMode
+        public bool OfflineMode
         {
-            get { return noUserMode; }
+            get { return offlineMode; }
             private set {
-                if (noUserMode == value) {
+                if (offlineMode == value) {
                     return;
                 }
 
-                ChangePropertyAndNotify (PropertyNoUserMode, delegate {
-                    noUserMode = value;
+                ChangePropertyAndNotify (PropertyOfflineMode, delegate {
+                    offlineMode = value;
                 });
             }
         }
