@@ -52,33 +52,31 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test, TestCaseSource ("DataObjectTypes")]
-        public void TestQuerying (Type dataType)
+        public async Task TestQuerying (Type dataType)
         {
-            RunAsync (async delegate {
-                var mgr = new ForeignRelationManager ();
+            var mgr = new ForeignRelationManager ();
 
-                // Test null relation
-                var relation = new ForeignRelation () {
-                    Type = dataType,
-                    Id = null,
-                };
-                Assert.IsNull (await mgr.ToListAsync (relation));
+            // Test null relation
+            var relation = new ForeignRelation () {
+                Type = dataType,
+                Id = null,
+            };
+            Assert.IsNull (await mgr.ToListAsync (relation));
 
-                // Test missing relation
-                relation = new ForeignRelation () {
-                    Type = dataType,
-                    Id = Guid.NewGuid (),
-                };
-                Assert.IsNull (await mgr.ToListAsync (relation));
+            // Test missing relation
+            relation = new ForeignRelation () {
+                Type = dataType,
+                Id = Guid.NewGuid (),
+            };
+            Assert.IsNull (await mgr.ToListAsync (relation));
 
-                // Create dummy data:
-                var inst = (CommonData)Activator.CreateInstance (dataType);
-                inst.Id = relation.Id.Value;
+            // Create dummy data:
+            var inst = (CommonData)Activator.CreateInstance (dataType);
+            inst.Id = relation.Id.Value;
 
-                var putAsyncMethod = DataStore.GetType ().GetMethod ("PutAsync").MakeGenericMethod (dataType);
-                await (Task)putAsyncMethod.Invoke (DataStore, new object[] { inst });
-                Assert.IsNotNull (await mgr.ToListAsync (relation));
-            });
+            var putAsyncMethod = DataStore.GetType ().GetMethod ("PutAsync").MakeGenericMethod (dataType);
+            await (Task)putAsyncMethod.Invoke (DataStore, new object[] { inst });
+            Assert.IsNotNull (await mgr.ToListAsync (relation));
         }
 
         public static IEnumerable<Type> DataObjectTypes

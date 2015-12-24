@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Toggl.Phoebe.Analytics;
 using Toggl.Phoebe.Data;
 using XPlatUtils;
+using System.Threading.Tasks;
 
 namespace Toggl.Phoebe.Tests.Analytics
 {
@@ -12,9 +13,9 @@ namespace Toggl.Phoebe.Tests.Analytics
     {
         private ExperimentManager manager;
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
             ServiceContainer.Register<ISettingsStore> (Mock.Of<ISettingsStore> (
                         (store) => store.ExperimentId == (string)null));

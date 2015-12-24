@@ -5,6 +5,7 @@ using Toggl.Phoebe.Analytics;
 using Toggl.Phoebe.Data;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
+using System.Threading.Tasks;
 
 namespace Toggl.Phoebe.Tests.Analytics
 {
@@ -13,9 +14,9 @@ namespace Toggl.Phoebe.Tests.Analytics
     {
         private TestTracker tracker;
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp();
+            await base.SetUp ();
             ServiceContainer.Register<ISettingsStore> (Mock.Of<ISettingsStore> (
                         (store) => store.ExperimentId == (string)null));
             ServiceContainer.Register<ExperimentManager> (new ExperimentManager ());
@@ -23,10 +24,10 @@ namespace Toggl.Phoebe.Tests.Analytics
         }
 
         [Test]
-        [ExpectedException (typeof (ArgumentException))]
         public void TestSendAppInitTime ()
         {
-            tracker.SendAppInitTime (TimeSpan.FromMilliseconds (1000));
+            Assert.Throws<ArgumentException> (() =>
+                tracker.SendAppInitTime (TimeSpan.FromMilliseconds (1000)));
         }
 
         [Test]
@@ -83,10 +84,9 @@ namespace Toggl.Phoebe.Tests.Analytics
         }
 
         [Test]
-        [ExpectedException (typeof (ArgumentException))]
         public void TestSendAccountLogoutEvent ()
         {
-            tracker.SendAccountLogoutEvent ();
+            Assert.Throws<ArgumentException> (tracker.SendAccountLogoutEvent);
         }
 
         [Test]

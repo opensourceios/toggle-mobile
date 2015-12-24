@@ -17,27 +17,25 @@ namespace Toggl.Phoebe.Tests.Data
         private WorkspaceData workspace;
         private bool syncManagerRunning;
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
-            RunAsync (async delegate {
-                workspace = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Test",
-                });
-
-                user = await DataStore.PutAsync (new UserData () {
-                    Name = "John Doe",
-                    TrackingMode = TrackingMode.StartNew,
-                    DefaultWorkspaceId = workspace.Id,
-                });
-
-                await SetUpFakeUser (user.Id);
-
-                ServiceContainer.Register<ISyncManager> (Mock.Of<ISyncManager> (
-                            (mgr) => mgr.IsRunning == syncManagerRunning));
-                ServiceContainer.Register<ActiveTimeEntryManager> (new ActiveTimeEntryManager ());
+            workspace = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Test",
             });
+
+            user = await DataStore.PutAsync (new UserData () {
+                Name = "John Doe",
+                TrackingMode = TrackingMode.StartNew,
+                DefaultWorkspaceId = workspace.Id,
+            });
+
+            await SetUpFakeUser (user.Id);
+
+            ServiceContainer.Register<ISyncManager> (Mock.Of<ISyncManager> (
+                        (mgr) => mgr.IsRunning == syncManagerRunning));
+            ServiceContainer.Register<ActiveTimeEntryManager> (new ActiveTimeEntryManager ());
         }
 
         private ActiveTimeEntryManager ActiveManager
@@ -98,182 +96,170 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public void TestSingleRunningTimer ()
+        public async Task TestSingleRunningTimer ()
         {
-            RunAsync (async delegate {
-                var startTime = Time.UtcNow - TimeSpan.FromHours (1);
-                var te1 = await DataStore.PutAsync (new TimeEntryData () {
-                    Description = "Morning coffee",
-                    State = TimeEntryState.Running,
-                    StartTime = startTime,
-                    ModifiedAt = startTime,
-                    IsDirty = true,
-                    WorkspaceId = workspace.Id,
-                    UserId = user.Id,
-                });
-                Assert.AreEqual (te1.Id, ActiveManager.Running.Id);
-
-                startTime = Time.UtcNow - TimeSpan.FromMinutes (10);
-                var te2 = await DataStore.PutAsync (new TimeEntryData () {
-                    Description = "Morning meeting",
-                    State = TimeEntryState.Running,
-                    StartTime = startTime,
-                    ModifiedAt = startTime,
-                    IsDirty = true,
-                    WorkspaceId = workspace.Id,
-                    UserId = user.Id,
-                });
-                Assert.AreEqual (te2.Id, ActiveManager.Running.Id);
-
-                StopSync ();
-
-                // Check against latest data:
-                await WhenDataStoreIdle ();
-                te1 = await GetEntry (te1.Id);
-                Assert.AreEqual (TimeEntryState.Finished, te1.State);
+            var startTime = Time.UtcNow - TimeSpan.FromHours (1);
+            var te1 = await DataStore.PutAsync (new TimeEntryData () {
+                Description = "Morning coffee",
+                State = TimeEntryState.Running,
+                StartTime = startTime,
+                ModifiedAt = startTime,
+                IsDirty = true,
+                WorkspaceId = workspace.Id,
+                UserId = user.Id,
             });
+            Assert.AreEqual (te1.Id, ActiveManager.Running.Id);
+
+            startTime = Time.UtcNow - TimeSpan.FromMinutes (10);
+            var te2 = await DataStore.PutAsync (new TimeEntryData () {
+                Description = "Morning meeting",
+                State = TimeEntryState.Running,
+                StartTime = startTime,
+                ModifiedAt = startTime,
+                IsDirty = true,
+                WorkspaceId = workspace.Id,
+                UserId = user.Id,
+            });
+            Assert.AreEqual (te2.Id, ActiveManager.Running.Id);
+
+            StopSync ();
+
+            // Check against latest data:
+            await WhenDataStoreIdle ();
+            te1 = await GetEntry (te1.Id);
+            Assert.AreEqual (TimeEntryState.Finished, te1.State);
         }
 
         [Test]
-        public void TestSyncMultipleRunningTimers ()
+        public async Task TestSyncMultipleRunningTimers ()
         {
-            RunAsync (async delegate {
-                StartSync ();
+            StartSync ();
 
-                var startTime = Time.UtcNow - TimeSpan.FromHours (1);
-                var te1 = await DataStore.PutAsync (new TimeEntryData () {
-                    Description = "Morning coffee",
-                    State = TimeEntryState.Running,
-                    StartTime = startTime,
-                    ModifiedAt = startTime,
-                    IsDirty = true,
-                    WorkspaceId = workspace.Id,
-                    UserId = user.Id,
-                });
-                Assert.AreEqual (te1.Id, ActiveManager.Running.Id);
-
-                startTime = Time.UtcNow - TimeSpan.FromMinutes (10);
-                var te2 = await DataStore.PutAsync (new TimeEntryData () {
-                    Description = "Morning meeting",
-                    State = TimeEntryState.Running,
-                    StartTime = startTime,
-                    ModifiedAt = startTime,
-                    IsDirty = true,
-                    WorkspaceId = workspace.Id,
-                    UserId = user.Id,
-                });
-
-                // Check against latest data:
-                te1 = await GetEntry (te1.Id);
-                te2 = await GetEntry (te2.Id);
-                Assert.AreEqual (TimeEntryState.Running, te1.State);
-                Assert.AreEqual (TimeEntryState.Running, te2.State);
-                Assert.AreEqual (te2.Id, ActiveManager.Running.Id);
-
-                StopSync ();
-
-                // Check against latest data:
-                await WhenDataStoreIdle ();
-                te1 = await GetEntry (te1.Id);
-                te2 = await GetEntry (te2.Id);
-                Assert.AreEqual (TimeEntryState.Finished, te1.State);
-                Assert.AreEqual (TimeEntryState.Running, te2.State);
-                Assert.AreEqual (te2.Id, ActiveManager.Running.Id);
+            var startTime = Time.UtcNow - TimeSpan.FromHours (1);
+            var te1 = await DataStore.PutAsync (new TimeEntryData () {
+                Description = "Morning coffee",
+                State = TimeEntryState.Running,
+                StartTime = startTime,
+                ModifiedAt = startTime,
+                IsDirty = true,
+                WorkspaceId = workspace.Id,
+                UserId = user.Id,
             });
+            Assert.AreEqual (te1.Id, ActiveManager.Running.Id);
+
+            startTime = Time.UtcNow - TimeSpan.FromMinutes (10);
+            var te2 = await DataStore.PutAsync (new TimeEntryData () {
+                Description = "Morning meeting",
+                State = TimeEntryState.Running,
+                StartTime = startTime,
+                ModifiedAt = startTime,
+                IsDirty = true,
+                WorkspaceId = workspace.Id,
+                UserId = user.Id,
+            });
+
+            // Check against latest data:
+            te1 = await GetEntry (te1.Id);
+            te2 = await GetEntry (te2.Id);
+            Assert.AreEqual (TimeEntryState.Running, te1.State);
+            Assert.AreEqual (TimeEntryState.Running, te2.State);
+            Assert.AreEqual (te2.Id, ActiveManager.Running.Id);
+
+            StopSync ();
+
+            // Check against latest data:
+            await WhenDataStoreIdle ();
+            te1 = await GetEntry (te1.Id);
+            te2 = await GetEntry (te2.Id);
+            Assert.AreEqual (TimeEntryState.Finished, te1.State);
+            Assert.AreEqual (TimeEntryState.Running, te2.State);
+            Assert.AreEqual (te2.Id, ActiveManager.Running.Id);
         }
 
         [Test]
-        public void TestUserChange ()
+        public async Task TestUserChange ()
         {
-            RunAsync (async delegate {
-                var startTime = Time.UtcNow - TimeSpan.FromHours (1);
-                var te1 = await DataStore.PutAsync (new TimeEntryData () {
-                    Description = "Morning coffee",
-                    State = TimeEntryState.Running,
-                    StartTime = startTime,
-                    ModifiedAt = startTime,
-                    IsDirty = true,
-                    WorkspaceId = workspace.Id,
-                    UserId = user.Id,
-                });
-
-                await WhenDataStoreIdle ();
-                Assert.AreEqual (te1.Id, ActiveManager.Running.Id);
-                Assert.AreEqual (user.Id, ActiveManager.Draft.UserId);
-
-                // Fake user change:
-                var newUser = await DataStore.PutAsync (new UserData () {
-                    Name = "Jane Doe",
-                    TrackingMode = TrackingMode.StartNew,
-                    DefaultWorkspaceId = workspace.Id,
-                });
-                await SetUpFakeUser (newUser.Id);
-
-                // Check that the active time entry manager reacted
-                await WhenDataStoreIdle ();
-                Assert.IsNull (ActiveManager.Running);
-                Assert.AreEqual (newUser.Id, ActiveManager.Draft.UserId);
+            var startTime = Time.UtcNow - TimeSpan.FromHours (1);
+            var te1 = await DataStore.PutAsync (new TimeEntryData () {
+                Description = "Morning coffee",
+                State = TimeEntryState.Running,
+                StartTime = startTime,
+                ModifiedAt = startTime,
+                IsDirty = true,
+                WorkspaceId = workspace.Id,
+                UserId = user.Id,
             });
+
+            await WhenDataStoreIdle ();
+            Assert.AreEqual (te1.Id, ActiveManager.Running.Id);
+            Assert.AreEqual (user.Id, ActiveManager.Draft.UserId);
+
+            // Fake user change:
+            var newUser = await DataStore.PutAsync (new UserData () {
+                Name = "Jane Doe",
+                TrackingMode = TrackingMode.StartNew,
+                DefaultWorkspaceId = workspace.Id,
+            });
+            await SetUpFakeUser (newUser.Id);
+
+            // Check that the active time entry manager reacted
+            await WhenDataStoreIdle ();
+            Assert.IsNull (ActiveManager.Running);
+            Assert.AreEqual (newUser.Id, ActiveManager.Draft.UserId);
         }
 
         [Test]
-        public void TestInitialDraft ()
+        public async Task TestInitialDraft ()
         {
-            RunAsync (async delegate {
-                await WhenDataStoreIdle ();
-                Assert.AreEqual (user.Id, ActiveManager.Draft.UserId);
-            });
+            await WhenDataStoreIdle ();
+            Assert.AreEqual (user.Id, ActiveManager.Draft.UserId);
         }
 
         [Test]
-        public void TestDraftStart ()
+        public async Task TestDraftStart ()
         {
-            RunAsync (async delegate {
-                await WhenDataStoreIdle ();
+            await WhenDataStoreIdle ();
 
-                // Start draft
-                var startTime = Time.UtcNow - TimeSpan.FromHours (1);
-                var data = await DataStore.PutAsync (new TimeEntryData (ActiveManager.Draft) {
-                    Description = "Morning coffee",
-                    State = TimeEntryState.Running,
-                    StartTime = startTime,
-                    ModifiedAt = startTime,
-                    IsDirty = true,
-                });
-
-                await WhenDataStoreIdle ();
-                Assert.AreEqual (data.Id, ActiveManager.Running.Id);
-                Assert.IsNotNull (ActiveManager.Draft);
-                Assert.AreNotEqual (data.Id, ActiveManager.Draft.Id);
-                Assert.AreEqual (user.Id, ActiveManager.Draft.UserId);
+            // Start draft
+            var startTime = Time.UtcNow - TimeSpan.FromHours (1);
+            var data = await DataStore.PutAsync (new TimeEntryData (ActiveManager.Draft) {
+                Description = "Morning coffee",
+                State = TimeEntryState.Running,
+                StartTime = startTime,
+                ModifiedAt = startTime,
+                IsDirty = true,
             });
+
+            await WhenDataStoreIdle ();
+            Assert.AreEqual (data.Id, ActiveManager.Running.Id);
+            Assert.IsNotNull (ActiveManager.Draft);
+            Assert.AreNotEqual (data.Id, ActiveManager.Draft.Id);
+            Assert.AreEqual (user.Id, ActiveManager.Draft.UserId);
         }
 
         [Test]
-        public void TestStopRunning ()
+        public async Task TestStopRunning ()
         {
-            RunAsync (async delegate {
-                var startTime = Time.UtcNow - TimeSpan.FromHours (1);
-                var data = await DataStore.PutAsync (new TimeEntryData () {
-                    Description = "Morning coffee",
-                    State = TimeEntryState.Running,
-                    StartTime = startTime,
-                    ModifiedAt = startTime,
-                    IsDirty = true,
-                    WorkspaceId = workspace.Id,
-                    UserId = user.Id,
-                });
-                Assert.AreEqual (data.Id, ActiveManager.Running.Id);
-
-                data = await DataStore.PutAsync (new TimeEntryData (data) {
-                    State = TimeEntryState.Finished,
-                    StopTime = Time.UtcNow,
-                    ModifiedAt = Time.UtcNow,
-                });
-
-                await WhenDataStoreIdle ();
-                Assert.IsNull (ActiveManager.Running);
+            var startTime = Time.UtcNow - TimeSpan.FromHours (1);
+            var data = await DataStore.PutAsync (new TimeEntryData () {
+                Description = "Morning coffee",
+                State = TimeEntryState.Running,
+                StartTime = startTime,
+                ModifiedAt = startTime,
+                IsDirty = true,
+                WorkspaceId = workspace.Id,
+                UserId = user.Id,
             });
+            Assert.AreEqual (data.Id, ActiveManager.Running.Id);
+
+            data = await DataStore.PutAsync (new TimeEntryData (data) {
+                State = TimeEntryState.Finished,
+                StopTime = Time.UtcNow,
+                ModifiedAt = Time.UtcNow,
+            });
+
+            await WhenDataStoreIdle ();
+            Assert.IsNull (ActiveManager.Running);
         }
     }
 }

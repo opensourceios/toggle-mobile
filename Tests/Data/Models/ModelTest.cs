@@ -17,9 +17,9 @@ namespace Toggl.Phoebe.Tests.Data.Models
     {
         protected static readonly string[] ExemptProperties = { "Data" };
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
             ResetDataCache ();
         }
@@ -153,47 +153,45 @@ namespace Toggl.Phoebe.Tests.Data.Models
         }
 
         [Test]
-        public void TestLazyLoad ()
+        public async Task TestLazyLoad ()
         {
-            RunAsync (async delegate {
-                var type = typeof (T);
-                var isLoadedField = type.BaseType.GetField ("isLoaded",
-                                    BindingFlags.NonPublic | BindingFlags.Instance);
-                var loadingTCSField = type.BaseType.GetField ("loadingTCS",
-                                      BindingFlags.NonPublic | BindingFlags.Instance);
+            var type = typeof (T);
+            var isLoadedField = type.BaseType.GetField ("isLoaded",
+                                BindingFlags.NonPublic | BindingFlags.Instance);
+            var loadingTCSField = type.BaseType.GetField ("loadingTCS",
+                                  BindingFlags.NonPublic | BindingFlags.Instance);
 
-                // Create dummy element (with default values) to load:
-                var pk = await CreateDummyData ();
+            // Create dummy element (with default values) to load:
+            var pk = await CreateDummyData ();
 
-                // Test property autoload by setting the value to something else and waiting to see if it is replaced
-                // by autoloaded data.
-                var properties = type.GetProperties (BindingFlags.Instance | BindingFlags.Public)
-                                 .Where (prop => prop.CanWrite)
-                                 .Where (prop => !ExemptProperties.Contains (prop.Name));
+            // Test property autoload by setting the value to something else and waiting to see if it is replaced
+            // by autoloaded data.
+            var properties = type.GetProperties (BindingFlags.Instance | BindingFlags.Public)
+                             .Where (prop => prop.CanWrite)
+                             .Where (prop => !ExemptProperties.Contains (prop.Name));
 
-                foreach (var prop in properties) {
-                    ResetDataCache ();
+            foreach (var prop in properties) {
+                ResetDataCache ();
 
-                    var inst = (T)Activator.CreateInstance (type, pk);
+                var inst = (T)Activator.CreateInstance (type, pk);
 
-                    var isLoaded = (bool)isLoadedField.GetValue (inst);
-                    var loadingTCS = (TaskCompletionSource<object>)loadingTCSField.GetValue (inst);
-                    Assert.False (isLoaded);
-                    Assert.IsNull (loadingTCS);
+                var isLoaded = (bool)isLoadedField.GetValue (inst);
+                var loadingTCS = (TaskCompletionSource<object>)loadingTCSField.GetValue (inst);
+                Assert.False (isLoaded);
+                Assert.IsNull (loadingTCS);
 
-                    SimulatePropertyChange (inst, prop);
+                SimulatePropertyChange (inst, prop);
 
-                    // Check private field isLoaded to determine that autoload has finished
-                    loadingTCS = (TaskCompletionSource<object>)loadingTCSField.GetValue (inst);
-                    isLoaded = (bool)isLoadedField.GetValue (inst);
+                // Check private field isLoaded to determine that autoload has finished
+                loadingTCS = (TaskCompletionSource<object>)loadingTCSField.GetValue (inst);
+                isLoaded = (bool)isLoadedField.GetValue (inst);
 
-                    if (isLoaded) {
-                        Assert.Inconclusive ("Model was loaded too fast. If this happens every time, there is a problem.");
-                    } else {
-                        Assert.NotNull (loadingTCS);
-                    }
+                if (isLoaded) {
+                    Assert.Inconclusive ("Model was loaded too fast. If this happens every time, there is a problem.");
+                } else {
+                    Assert.NotNull (loadingTCS);
                 }
-            });
+            }
         }
 
         [Test]
@@ -245,28 +243,26 @@ namespace Toggl.Phoebe.Tests.Data.Models
         }
 
         [Test]
-        public void TestLoading ()
+        public async Task TestLoading ()
         {
-            RunAsync (async delegate {
-                var type = typeof (T);
+            var type = typeof (T);
 
-                // Test load new
-                var inst = (T)Activator.CreateInstance (type);
-                var loadTask = (Task)type.GetMethod ("LoadAsync").Invoke (inst, new object[0]);
-                await loadTask;
+            // Test load new
+            var inst = (T)Activator.CreateInstance (type);
+            var loadTask = (Task)type.GetMethod ("LoadAsync").Invoke (inst, new object[0]);
+            await loadTask;
 
-                // Test load invalid
-                var pk = Guid.NewGuid ();
-                inst = (T)Activator.CreateInstance (type, pk);
-                loadTask = (Task)type.GetMethod ("LoadAsync").Invoke (inst, new object[0]);
-                await loadTask;
+            // Test load invalid
+            var pk = Guid.NewGuid ();
+            inst = (T)Activator.CreateInstance (type, pk);
+            loadTask = (Task)type.GetMethod ("LoadAsync").Invoke (inst, new object[0]);
+            await loadTask;
 
-                // Test load valid task:
-                pk = await CreateDummyData ();
-                inst = (T)Activator.CreateInstance (type, pk);
-                loadTask = (Task)type.GetMethod ("LoadAsync").Invoke (inst, new object[0]);
-                await loadTask;
-            });
+            // Test load valid task:
+            pk = await CreateDummyData ();
+            inst = (T)Activator.CreateInstance (type, pk);
+            loadTask = (Task)type.GetMethod ("LoadAsync").Invoke (inst, new object[0]);
+            await loadTask;
         }
 
         [Test]
@@ -288,7 +284,7 @@ namespace Toggl.Phoebe.Tests.Data.Models
         }
 
         [Test]
-        public virtual void TestSaving ()
+        public virtual async Task TestSaving ()
         {
             var type = typeof (T);
             var validData = new Dictionary<PropertyInfo, Func<object>> ();
@@ -299,103 +295,97 @@ namespace Toggl.Phoebe.Tests.Data.Models
                 validData.Add (prop, () => Activator.CreateInstance (prop.PropertyType, Guid.NewGuid ()));
             }
 
-            TestSaving (validData);
+            await TestSaving (validData);
         }
 
-        protected void TestSaving (Dictionary<PropertyInfo, Func<object>> validData)
+        protected async Task TestSaving (Dictionary<PropertyInfo, Func<object>> validData)
         {
-            RunAsync (async delegate {
-                var type = typeof (T);
+            var type = typeof (T);
 
-                T inst;
-                Task saveTask;
+            T inst;
+            Task saveTask;
 
-                // Test that we get ValidationError on save when required property not set
-                var properties = validData.Keys.ToList ();
+            // Test that we get ValidationError on save when required property not set
+            var properties = validData.Keys.ToList ();
 
-                foreach (var exemptProp in properties) {
-                    inst = Activator.CreateInstance<T> ();
-
-                    foreach (var prop in properties) {
-                        if (prop == exemptProp) {
-                            continue;
-                        }
-
-                        prop.SetValue (inst, validData [prop] ());
-                    }
-
-                    saveTask = (Task)type.GetMethod ("SaveAsync").Invoke (inst, new object[0]);
-                    Assert.That (() => saveTask.GetAwaiter ().GetResult (), Throws.Exception.TypeOf<ValidationException> ());
-                }
-
-                // Test saving new object
+            foreach (var exemptProp in properties) {
                 inst = Activator.CreateInstance<T> ();
 
                 foreach (var prop in properties) {
-                    var model = Activator.CreateInstance (prop.PropertyType, Guid.NewGuid ());
-                    prop.SetValue (inst, model);
+                    if (prop == exemptProp) {
+                        continue;
+                    }
+
+                    prop.SetValue (inst, validData [prop] ());
                 }
 
                 saveTask = (Task)type.GetMethod ("SaveAsync").Invoke (inst, new object[0]);
-                await saveTask;
-                Assert.AreNotEqual (Guid.Empty, inst.Id, "Id should've been updated after save.");
+                Assert.That (() => saveTask.GetAwaiter ().GetResult (), Throws.Exception.TypeOf<ValidationException> ());
+            }
 
-                // Test saving existing model
-                saveTask = (Task)type.GetMethod ("SaveAsync").Invoke (inst, new object[0]);
-                await saveTask;
-            });
+            // Test saving new object
+            inst = Activator.CreateInstance<T> ();
+
+            foreach (var prop in properties) {
+                var model = Activator.CreateInstance (prop.PropertyType, Guid.NewGuid ());
+                prop.SetValue (inst, model);
+            }
+
+            saveTask = (Task)type.GetMethod ("SaveAsync").Invoke (inst, new object[0]);
+            await saveTask;
+            Assert.AreNotEqual (Guid.Empty, inst.Id, "Id should've been updated after save.");
+
+            // Test saving existing model
+            saveTask = (Task)type.GetMethod ("SaveAsync").Invoke (inst, new object[0]);
+            await saveTask;
         }
 
         [Test]
-        public void TestDeletingLocal ()
+        public async Task TestDeletingLocal ()
         {
-            RunAsync (async delegate {
-                var type = typeof (T);
+            var type = typeof (T);
 
-                // Create dummy element (with default values) to load:
-                var data = await PutData (CreateDataInstance ());
-                var inst = (T)Activator.CreateInstance (typeof (T), data);
+            // Create dummy element (with default values) to load:
+            var data = await PutData (CreateDataInstance ());
+            var inst = (T)Activator.CreateInstance (typeof (T), data);
 
-                // Delete via model
-                var deleteTask = (Task)type.GetMethod ("DeleteAsync").Invoke (inst, new object[0]);
-                await deleteTask;
+            // Delete via model
+            var deleteTask = (Task)type.GetMethod ("DeleteAsync").Invoke (inst, new object[0]);
+            await deleteTask;
 
-                // Check that the item has been deleted from the datastore
-                Assert.IsNull (await GetDataById (data.GetType(), data.Id));
+            // Check that the item has been deleted from the datastore
+            Assert.IsNull (await GetDataById (data.GetType(), data.Id));
 
-                // Make sure that the underlying data in the model has reset the IDs
-                data = (CommonData)type.GetProperty ("Data").GetValue (inst);
-                Assert.AreEqual (Guid.Empty, data.Id);
-                Assert.IsNull (data.RemoteId);
-            });
+            // Make sure that the underlying data in the model has reset the IDs
+            data = (CommonData)type.GetProperty ("Data").GetValue (inst);
+            Assert.AreEqual (Guid.Empty, data.Id);
+            Assert.IsNull (data.RemoteId);
         }
 
         [Test]
-        public void TestDeletingRemote ()
+        public async Task TestDeletingRemote ()
         {
-            RunAsync (async delegate {
-                var type = typeof (T);
+            var type = typeof (T);
 
-                // Create dummy element (with default values) to load:
-                var data = CreateDataInstance ();
-                data.RemoteId = 1;
-                data = await PutData (data);
-                var inst = (T)Activator.CreateInstance (typeof (T), data);
+            // Create dummy element (with default values) to load:
+            var data = CreateDataInstance ();
+            data.RemoteId = 1;
+            data = await PutData (data);
+            var inst = (T)Activator.CreateInstance (typeof (T), data);
 
-                // Delete via model
-                var deleteTask = (Task)type.GetMethod ("DeleteAsync").Invoke (inst, new object[0]);
-                await deleteTask;
+            // Delete via model
+            var deleteTask = (Task)type.GetMethod ("DeleteAsync").Invoke (inst, new object[0]);
+            await deleteTask;
 
-                // Check that the item has been marked for deletion in the database
-                data = await GetDataById (data.GetType(), data.Id);
-                Assert.IsNotNull (data);
-                Assert.IsNotNull (data.DeletedAt);
+            // Check that the item has been marked for deletion in the database
+            data = await GetDataById (data.GetType(), data.Id);
+            Assert.IsNotNull (data);
+            Assert.IsNotNull (data.DeletedAt);
 
-                // Make sure that the underlying data in the model has reset the IDs
-                data = (CommonData)type.GetProperty ("Data").GetValue (inst);
-                Assert.AreEqual (Guid.Empty, data.Id);
-                Assert.IsNull (data.RemoteId);
-            });
+            // Make sure that the underlying data in the model has reset the IDs
+            data = (CommonData)type.GetProperty ("Data").GetValue (inst);
+            Assert.AreEqual (Guid.Empty, data.Id);
+            Assert.IsNull (data.RemoteId);
         }
 
         private async Task<Guid> CreateDummyData ()

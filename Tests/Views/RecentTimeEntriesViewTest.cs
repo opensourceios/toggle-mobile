@@ -22,324 +22,292 @@ namespace Toggl.Phoebe.Tests.Views
             get { return ServiceContainer.Resolve<AuthManager> (); }
         }
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
-            RunAsync (async delegate {
-                await CreateTestData ();
+            await CreateTestData ();
 
-                ServiceContainer.Register<ISyncManager> (Mock.Of<ISyncManager> (
-                            (mgr) => mgr.IsRunning == false));
-                ServiceContainer.Register<ISettingsStore> (Mock.Of<ISettingsStore> (
-                            (store) => store.ApiToken == "test" &&
-                            store.UserId == user.Id));
-                ServiceContainer.Register<AuthManager> (new AuthManager ());
-            });
+            ServiceContainer.Register<ISyncManager> (Mock.Of<ISyncManager> (
+                        (mgr) => mgr.IsRunning == false));
+            ServiceContainer.Register<ISettingsStore> (Mock.Of<ISettingsStore> (
+                        (store) => store.ApiToken == "test" &&
+                        store.UserId == user.Id));
+            ServiceContainer.Register<AuthManager> (new AuthManager ());
         }
 
         [Test]
-        public void TestInitialGrouping ()
+        public async Task TestInitialGrouping ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
-            });
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestInitialReload ()
+        public async Task TestInitialReload ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                view.Reload ();
-                await WaitForLoaded (view);
+            view.Reload ();
+            await WaitForLoaded (view);
 
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
-            });
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestChangeGroupBottom ()
+        public async Task TestChangeGroupBottom ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                await ChangeData<TimeEntryData> (1, m => m.Description += " and some");
+            await ChangeData<TimeEntryData> (1, m => m.Description += " and some");
 
-                Assert.AreEqual (5, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2, 1 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
-            });
+            Assert.AreEqual (5, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2, 1 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestChangeGroupTop ()
+        public async Task TestChangeGroupTop ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                await ChangeData<TimeEntryData> (3, m => m.Description += " and some");
+            await ChangeData<TimeEntryData> (3, m => m.Description += " and some");
 
-                Assert.AreEqual (5, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2, 1 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
-            });
+            Assert.AreEqual (5, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2, 1 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestChangeGroupBottomToTop ()
+        public async Task TestChangeGroupBottomToTop ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                await ChangeData<TimeEntryData> (1, m => {
-                    m.StopTime += TimeSpan.FromDays (1);
-                    m.StartTime += TimeSpan.FromDays (1);
-                });
-
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 1, 5, 4, 2 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
+            await ChangeData<TimeEntryData> (1, m => {
+                m.StopTime += TimeSpan.FromDays (1);
+                m.StartTime += TimeSpan.FromDays (1);
             });
+
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 1, 5, 4, 2 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestChangeGroupTopToBottom ()
+        public async Task TestChangeGroupTopToBottom ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                await ChangeData<TimeEntryData> (3, m => {
-                    m.StopTime -= TimeSpan.FromDays (1);
-                    m.StartTime -= TimeSpan.FromDays (1);
-                });
-
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 2, 1 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
+            await ChangeData<TimeEntryData> (3, m => {
+                m.StopTime -= TimeSpan.FromDays (1);
+                m.StartTime -= TimeSpan.FromDays (1);
             });
+
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 2, 1 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestMarkDeletedGroup ()
+        public async Task TestMarkDeletedGroup ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                await ChangeData<TimeEntryData> (2, m => {
-                    m.DeletedAt = Time.UtcNow;
-                });
-
-                Assert.AreEqual (3, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
+            await ChangeData<TimeEntryData> (2, m => {
+                m.DeletedAt = Time.UtcNow;
             });
+
+            Assert.AreEqual (3, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestMarkDeletedGroupTop ()
+        public async Task TestMarkDeletedGroupTop ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                await ChangeData<TimeEntryData> (1, m => {
-                    m.DeletedAt = Time.UtcNow;
-                });
-
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
+            await ChangeData<TimeEntryData> (1, m => {
+                m.DeletedAt = Time.UtcNow;
             });
+
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestMarkDeletedGroupBottom ()
+        public async Task TestMarkDeletedGroupBottom ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                await ChangeData<TimeEntryData> (3, m => {
-                    m.DeletedAt = Time.UtcNow;
-                });
-
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 2, 1 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
+            await ChangeData<TimeEntryData> (3, m => {
+                m.DeletedAt = Time.UtcNow;
             });
+
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 2, 1 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestDeleteGroup ()
+        public async Task TestDeleteGroup ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                var model = await GetByRemoteId<TimeEntryData> (2);
-                await DataStore.DeleteAsync (model);
+            var model = await GetByRemoteId<TimeEntryData> (2);
+            await DataStore.DeleteAsync (model);
 
-                Assert.AreEqual (3, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
-            });
+            Assert.AreEqual (3, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestDeleteGroupTop ()
+        public async Task TestDeleteGroupTop ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                var model = await GetByRemoteId<TimeEntryData> (1);
-                await DataStore.DeleteAsync (model);
+            var model = await GetByRemoteId<TimeEntryData> (1);
+            await DataStore.DeleteAsync (model);
 
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
-            });
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestDeleteGroupBottom ()
+        public async Task TestDeleteGroupBottom ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                var model = await GetByRemoteId<TimeEntryData> (3);
-                await DataStore.DeleteAsync (model);
+            var model = await GetByRemoteId<TimeEntryData> (3);
+            await DataStore.DeleteAsync (model);
 
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 2, 1 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
-            });
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 2, 1 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestDeletedEntry ()
+        public async Task TestDeletedEntry ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                await DataStore.PutAsync (new TimeEntryData () {
-                    RemoteId = 6,
-                    State = TimeEntryState.Finished,
-                    StartTime = MakeTime (16, 0),
-                    StopTime = MakeTime (16, 36),
-                    WorkspaceId = workspace.Id,
-                    UserId = user.Id,
-                    DeletedAt = MakeTime (16, 39),
-                });
-
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
+            await DataStore.PutAsync (new TimeEntryData () {
+                RemoteId = 6,
+                State = TimeEntryState.Finished,
+                StartTime = MakeTime (16, 0),
+                StopTime = MakeTime (16, 36),
+                WorkspaceId = workspace.Id,
+                UserId = user.Id,
+                DeletedAt = MakeTime (16, 39),
             });
+
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
-        public void TestPastEntryHidden ()
+        public async Task TestPastEntryHidden ()
         {
-            RunAsync (async delegate {
-                await DataStore.PutAsync (new TimeEntryData () {
-                    RemoteId = 6,
-                    State = TimeEntryState.Finished,
-                    StartTime = MakeTime (16, 0).AddDays (-10),
-                    StopTime = MakeTime (16, 36).AddDays (-10),
-                    WorkspaceId = workspace.Id,
-                    UserId = user.Id,
-                });
-
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
-                Assert.AreEqual (4, view.Count);
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
-                view.Dispose ();
+            await DataStore.PutAsync (new TimeEntryData () {
+                RemoteId = 6,
+                State = TimeEntryState.Finished,
+                StartTime = MakeTime (16, 0).AddDays (-10),
+                StopTime = MakeTime (16, 36).AddDays (-10),
+                WorkspaceId = workspace.Id,
+                UserId = user.Id,
             });
+
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
+            Assert.AreEqual (4, view.Count);
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
+            view.Dispose ();
         }
 
         [Test]
         [Description ("Make sure that the view updates it's internal data objects when no reordering happens.")]
-        public void TestDataUpdate ()
+        public async Task TestDataUpdate ()
         {
-            RunAsync (async delegate {
-                var view = new RecentTimeEntriesView ();
-                await WaitForLoaded (view);
+            var view = new RecentTimeEntriesView ();
+            await WaitForLoaded (view);
 
-                Assert.AreEqual (
-                    new long[] { 5, 4, 3, 2 },
-                    view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
-                );
+            Assert.AreEqual (
+                new long[] { 5, 4, 3, 2 },
+                view.Data.Select ((entry) => entry.RemoteId.Value).ToArray ()
+            );
 
-                // Update data
-                var workspaceId = Guid.NewGuid ();
-                var data = await GetByRemoteId<TimeEntryData> (5);
-                data.WorkspaceId = workspaceId;
-                await DataStore.PutAsync (data);
+            // Update data
+            var workspaceId = Guid.NewGuid ();
+            var data = await GetByRemoteId<TimeEntryData> (5);
+            data.WorkspaceId = workspaceId;
+            await DataStore.PutAsync (data);
 
-                Assert.AreEqual (workspaceId, view.Data.ElementAt (0).WorkspaceId,
-                                 "View failed to update internal data with latest information.");
-            });
+            Assert.AreEqual (workspaceId, view.Data.ElementAt (0).WorkspaceId,
+                             "View failed to update internal data with latest information.");
         }
 
         private async Task CreateTestData ()

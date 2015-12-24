@@ -21,92 +21,84 @@ namespace Toggl.Phoebe.Tests.Views
         private DateTime startTime;
         private DateTime endTime;
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
-            RunAsync (async delegate {
-                workspace = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Test",
-                    RemoteId = 9999
-                });
-                user = await DataStore.PutAsync (new UserData () {
-                    Name = "John Doe",
-                    TrackingMode = TrackingMode.StartNew,
-                    DefaultWorkspaceId = workspace.Id,
-                    StartOfWeek = DayOfWeek.Monday,
-                });
-                await SetUpFakeUser (user.Id);
+            workspace = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Test",
+                RemoteId = 9999
+            });
+            user = await DataStore.PutAsync (new UserData () {
+                Name = "John Doe",
+                TrackingMode = TrackingMode.StartNew,
+                DefaultWorkspaceId = workspace.Id,
+                StartOfWeek = DayOfWeek.Monday,
+            });
+            await SetUpFakeUser (user.Id);
 
-                // configure IReportClient service
-                var serviceMock = new Mock<IReportsClient>();
+            // configure IReportClient service
+            var serviceMock = new Mock<IReportsClient>();
 
-                startTime = ResolveStartDate ( DateTime.Now, ZoomLevel.Week, user);
-                endTime = ResolveEndDate ( startTime, ZoomLevel.Week);
+            startTime = ResolveStartDate ( DateTime.Now, ZoomLevel.Week, user);
+            endTime = ResolveEndDate ( startTime, ZoomLevel.Week);
 
-                serviceMock.Setup ( x => x.GetReports ( startTime, endTime, Convert.ToInt64 ( workspace.RemoteId)))
+            serviceMock.Setup ( x => x.GetReports ( startTime, endTime, Convert.ToInt64 ( workspace.RemoteId)))
                 .Returns ( Task.FromResult (CreateEmptyReportJson ( ZoomLevel.Week, startTime)));
 
-                startTime = ResolveStartDate ( DateTime.Now, ZoomLevel.Month, user);
-                endTime = ResolveEndDate ( startTime, ZoomLevel.Month);
+            startTime = ResolveStartDate ( DateTime.Now, ZoomLevel.Month, user);
+            endTime = ResolveEndDate ( startTime, ZoomLevel.Month);
 
-                serviceMock.Setup ( x => x.GetReports ( startTime, endTime, Convert.ToInt64 ( workspace.RemoteId)))
+            serviceMock.Setup ( x => x.GetReports ( startTime, endTime, Convert.ToInt64 ( workspace.RemoteId)))
                 .Returns ( Task.FromResult (CreateEmptyReportJson ( ZoomLevel.Month, startTime)));
 
-                startTime = ResolveStartDate ( DateTime.Now, ZoomLevel.Year, user);
-                endTime = ResolveEndDate ( startTime, ZoomLevel.Year);
+            startTime = ResolveStartDate ( DateTime.Now, ZoomLevel.Year, user);
+            endTime = ResolveEndDate ( startTime, ZoomLevel.Year);
 
-                serviceMock.Setup ( x => x.GetReports ( startTime, endTime, Convert.ToInt64 ( workspace.RemoteId)))
+            serviceMock.Setup ( x => x.GetReports ( startTime, endTime, Convert.ToInt64 ( workspace.RemoteId)))
                 .Returns ( Task.FromResult (CreateEmptyReportJson ( ZoomLevel.Year, startTime)));
 
-                ServiceContainer.Register<IReportsClient> (serviceMock.Object);
-                ServiceContainer.Register<ReportJsonConverter> ();
-            });
+            ServiceContainer.Register<IReportsClient> (serviceMock.Object);
+            ServiceContainer.Register<ReportJsonConverter> ();
         }
 
         [Test]
-        public void TestCreateWeekReport ()
+        public async Task TestCreateWeekReport ()
         {
-            RunAsync (async delegate {
-                var view = new SummaryReportView ();
-                view.Period = ZoomLevel.Week;
-                await view.Load (0);
-                Assert.AreEqual (false, view.IsLoading);
-                Assert.AreEqual (false, view.IsError);
-                Assert.AreEqual (true, view.ActivityCount == 7);
-                Assert.AreEqual (true, view.Projects.Count > 0);
-                Assert.AreEqual (true, view.CollapsedProjects.Count > 0);
-            });
+            var view = new SummaryReportView ();
+            view.Period = ZoomLevel.Week;
+            await view.Load (0);
+            Assert.AreEqual (false, view.IsLoading);
+            Assert.AreEqual (false, view.IsError);
+            Assert.AreEqual (true, view.ActivityCount == 7);
+            Assert.AreEqual (true, view.Projects.Count > 0);
+            Assert.AreEqual (true, view.CollapsedProjects.Count > 0);
         }
 
         [Test]
-        public void TestCreateMonthReport ()
+        public async Task TestCreateMonthReport ()
         {
-            RunAsync (async delegate {
-                var view = new SummaryReportView ();
-                view.Period = ZoomLevel.Month;
-                await view.Load (0);
-                Assert.AreEqual (false, view.IsLoading);
-                Assert.AreEqual (false, view.IsError);
-                Assert.AreEqual (true, view.ActivityCount > 27);
-                Assert.AreEqual (true, view.Projects.Count > 0);
-                Assert.AreEqual (true, view.CollapsedProjects.Count > 0);
-            });
+            var view = new SummaryReportView ();
+            view.Period = ZoomLevel.Month;
+            await view.Load (0);
+            Assert.AreEqual (false, view.IsLoading);
+            Assert.AreEqual (false, view.IsError);
+            Assert.AreEqual (true, view.ActivityCount > 27);
+            Assert.AreEqual (true, view.Projects.Count > 0);
+            Assert.AreEqual (true, view.CollapsedProjects.Count > 0);
         }
 
         [Test]
-        public void TestCreateYearReport ()
+        public async Task TestCreateYearReport ()
         {
-            RunAsync (async delegate {
-                var view = new SummaryReportView ();
-                view.Period = ZoomLevel.Year;
-                await view.Load (0);
-                Assert.AreEqual (false, view.IsLoading);
-                Assert.AreEqual (false, view.IsError);
-                Assert.AreEqual (true, view.ActivityCount == 12);
-                Assert.AreEqual (true, view.Projects.Count > 0);
-                Assert.AreEqual (true, view.CollapsedProjects.Count > 0);
-            });
+            var view = new SummaryReportView ();
+            view.Period = ZoomLevel.Year;
+            await view.Load (0);
+            Assert.AreEqual (false, view.IsLoading);
+            Assert.AreEqual (false, view.IsError);
+            Assert.AreEqual (true, view.ActivityCount == 12);
+            Assert.AreEqual (true, view.Projects.Count > 0);
+            Assert.AreEqual (true, view.CollapsedProjects.Count > 0);
         }
 
         private ReportJson CreateEmptyReportJson ( ZoomLevel period, DateTime startDate)
@@ -193,4 +185,3 @@ namespace Toggl.Phoebe.Tests.Views
         }
     }
 }
-

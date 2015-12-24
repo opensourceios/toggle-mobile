@@ -146,6 +146,12 @@ namespace Toggl.Phoebe
 
         private void ScheduleProcessQueue ()
         {
+            // TODO: This is added only for unit tests. Solve it differently?
+            if (threadContext == null) {
+                ProcessQueue ();
+                return;
+            }
+
             lock (syncRoot) {
                 if (isScheduled) {
                     return;

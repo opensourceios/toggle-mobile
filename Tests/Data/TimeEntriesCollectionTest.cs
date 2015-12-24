@@ -82,9 +82,9 @@ namespace Toggl.Phoebe.Tests.Data
         Guid userId;
         Guid workspaceId;
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
             userId = Guid.NewGuid ();
             workspaceId = Guid.NewGuid ();
@@ -253,7 +253,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestSendTwoPutsToEmptyList ()
+        public async Task TestSendTwoPutsToEmptyList ()
         {
             var feed = new TestFeed ();
             var singleView = await CreateTimeEntriesCollection (feed, false, 0);
@@ -279,7 +279,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveForwardWithDelete ()
+        public async Task TestMoveForwardWithDelete ()
         {
             var dt = new DateTime (2015, 12, 14, 19, 0, 0);
             var entries = new [] {
@@ -309,7 +309,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveBackwardWithDelete ()
+        public async Task TestMoveBackwardWithDelete ()
         {
             var dt = new DateTime (2015, 12, 14, 19, 0, 0);
             var entries = new [] {
@@ -340,7 +340,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveForwardWithAdd ()
+        public async Task TestMoveForwardWithAdd ()
         {
             var dt = new DateTime (2015, 12, 15, 10, 0, 0);
             var entry1 = CreateTimeEntry (dt);
@@ -368,7 +368,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveBackwardWithAdd ()
+        public async Task TestMoveBackwardWithAdd ()
         {
             var dt = new DateTime (2015, 12, 15, 10, 0, 0);
             var entry1 = CreateTimeEntry (dt.AddDays (1));
@@ -397,7 +397,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveForwardWithTwoEntries ()
+        public async Task TestMoveForwardWithTwoEntries ()
         {
             var dt = new DateTime (2015, 12, 15, 10, 0, 0);
             var entry1 = CreateTimeEntry (dt);
@@ -431,7 +431,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveBackwardWithTwoEntries ()
+        public async Task TestMoveBackwardWithTwoEntries ()
         {
             var dt = new DateTime (2015, 12, 15, 10, 0, 0);
             var entry1 = CreateTimeEntry (dt.AddMinutes (-10));
@@ -465,7 +465,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveForwardAndBackward ()
+        public async Task TestMoveForwardAndBackward ()
         {
             var dt = new DateTime (2015, 12, 15, 10, 0, 0);
             var entry1 = CreateTimeEntry (dt);
@@ -495,7 +495,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestUpdateThreeEntries ()
+        public async Task TestUpdateThreeEntries ()
         {
             var dt = new DateTime (2015, 12, 14, 19, 0, 0);
             var entries = new [] {
@@ -526,7 +526,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestChangeDateHeaderToFuture ()
+        public async Task TestChangeDateHeaderToFuture ()
         {
             var dt = new DateTime (2015, 12, 14, 10, 10, 11, 0);
             var entry1 = CreateTimeEntry (dt);
@@ -555,7 +555,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestChangeDateHeaderToPast ()
+        public async Task TestChangeDateHeaderToPast ()
         {
             var dt = new DateTime (2015, 12, 14, 10, 10, 11, 0);
             var entry1 = CreateTimeEntry (dt);                 // First at list
@@ -585,7 +585,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveToDifferentDate ()
+        public async Task TestMoveToDifferentDate ()
         {
             var dt = new DateTime (2015, 12, 14, 10, 10, 11, 0);
             var entry1 = CreateTimeEntry (dt);                  // First at list
@@ -611,7 +611,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveTopTimeEntryToPreviousDay ()
+        public async Task TestMoveTopTimeEntryToPreviousDay ()
         {
             var dt = new DateTime (2015, 12, 14, 10, 10, 11, 0);
             var entry1 = CreateTimeEntry (dt);                  // First at list
@@ -638,7 +638,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestMoveBottomTimeEntryToNextDay ()
+        public async Task TestMoveBottomTimeEntryToNextDay ()
         {
             var dt = new DateTime (2015, 12, 14, 10, 10, 11, 0);
             var entry1 = CreateTimeEntry (dt);                  // First at list
@@ -665,7 +665,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void TestTripleTimeMovement ()
+        public async Task TestTripleTimeMovement ()
         {
             var dt = new DateTime (2015, 12, 14, 10, 10, 0, 0);
             var entry1 = CreateTimeEntry (dt);                  // First at list
@@ -692,7 +692,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void GroupTestSendPutsToEmptyList ()
+        public async Task GroupTestSendPutsToEmptyList ()
         {
             var feed = new TestFeed ();
             var groupedView = await CreateTimeEntriesCollection (feed, true, 0);
@@ -726,7 +726,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void GroupTestAddEntriesInPlace ()
+        public async Task GroupTestAddEntriesInPlace ()
         {
             var dt = new DateTime (2015, 12, 14, 10, 0, 0, 0);
             Guid prj = Guid.NewGuid (), task1 = Guid.NewGuid (), task2 = Guid.NewGuid ();
@@ -746,7 +746,7 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public async void GroupTestDeleteEntries ()
+        public async Task GroupTestDeleteEntries ()
         {
             var dt = new DateTime (2015, 12, 14, 10, 0, 0, 0);
             Guid prj = Guid.NewGuid (), task1 = Guid.NewGuid (), task2 = Guid.NewGuid ();

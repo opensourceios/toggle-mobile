@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Toggl.Phoebe.Data.DataObjects;
 using Toggl.Phoebe.Data.Json;
 using Toggl.Phoebe.Data.Json.Converters;
+using System.Threading.Tasks;
 
 namespace Toggl.Phoebe.Tests.Data.Json.Converters
 {
@@ -11,141 +12,131 @@ namespace Toggl.Phoebe.Tests.Data.Json.Converters
     {
         private ClientJsonConverter converter;
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
             converter = new ClientJsonConverter ();
         }
 
         [Test]
-        public void ExportExisting ()
+        public async Task ExportExisting ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "Github",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
-
-                var json = await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, clientData));
-                Assert.AreEqual (2, json.Id);
-                Assert.AreEqual ("Github", json.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 3), json.ModifiedAt);
-                Assert.AreEqual (1, json.WorkspaceId);
-                Assert.IsNull (json.DeletedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "Github",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            });
+
+            var json = await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, clientData));
+            Assert.AreEqual (2, json.Id);
+            Assert.AreEqual ("Github", json.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 3), json.ModifiedAt);
+            Assert.AreEqual (1, json.WorkspaceId);
+            Assert.IsNull (json.DeletedAt);
         }
 
         [Test]
-        public void ExportInvalidWorkspace ()
+        public async Task ExportInvalidWorkspace ()
         {
             ClientData clientData = null;
 
-            RunAsync (async delegate {
-                clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "Github",
-                    WorkspaceId = Guid.NewGuid (),
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
+            clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "Github",
+                WorkspaceId = Guid.NewGuid (),
+                ModifiedAt = new DateTime (2014, 1, 3),
             });
 
-            Assert.That (() => RunAsync (async delegate {
+            Assert.That (async () => {
                 await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, clientData));
-            }), Throws.Exception.TypeOf<RelationRemoteIdMissingException> ());
+            }, Throws.Exception.TypeOf<RelationRemoteIdMissingException> ());
         }
 
         [Test]
-        public void ExportNew ()
+        public async Task ExportNew ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    Name = "Github",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
-
-                var json = await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, clientData));
-                Assert.IsNull (json.Id);
-                Assert.AreEqual ("Github", json.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 3), json.ModifiedAt);
-                Assert.AreEqual (1, json.WorkspaceId);
-                Assert.IsNull (json.DeletedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                Name = "Github",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            });
+
+            var json = await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, clientData));
+            Assert.IsNull (json.Id);
+            Assert.AreEqual ("Github", json.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 3), json.ModifiedAt);
+            Assert.AreEqual (1, json.WorkspaceId);
+            Assert.IsNull (json.DeletedAt);
         }
 
         [Test]
-        public void ImportNew ()
+        public async Task ImportNew ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    Name = "Github",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                };
-
-                var clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.AreNotEqual (Guid.Empty, clientData.Id);
-                Assert.AreEqual (2, clientData.RemoteId);
-                Assert.AreEqual ("Github", clientData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 3), clientData.ModifiedAt);
-                Assert.AreEqual (workspaceData.Id, clientData.WorkspaceId);
-                Assert.IsFalse (clientData.IsDirty);
-                Assert.IsFalse (clientData.RemoteRejected);
-                Assert.IsNull (clientData.DeletedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientJson = new ClientJson () {
+                Id = 2,
+                Name = "Github",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            };
+
+            var clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.AreNotEqual (Guid.Empty, clientData.Id);
+            Assert.AreEqual (2, clientData.RemoteId);
+            Assert.AreEqual ("Github", clientData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 3), clientData.ModifiedAt);
+            Assert.AreEqual (workspaceData.Id, clientData.WorkspaceId);
+            Assert.IsFalse (clientData.IsDirty);
+            Assert.IsFalse (clientData.RemoteRejected);
+            Assert.IsNull (clientData.DeletedAt);
         }
 
         [Test]
-        public void ImportUpdated ()
+        public async Task ImportUpdated ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
-                });
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    Name = "Github",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc).ToLocalTime (), // JSON deserialized to local
-                };
-
-                clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.AreNotEqual (Guid.Empty, clientData.Id);
-                Assert.AreEqual (2, clientData.RemoteId);
-                Assert.AreEqual ("Github", clientData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc), clientData.ModifiedAt);
-                Assert.AreEqual (workspaceData.Id, clientData.WorkspaceId);
-                Assert.IsFalse (clientData.IsDirty);
-                Assert.IsFalse (clientData.RemoteRejected);
-                Assert.IsNull (clientData.DeletedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
+            });
+            var clientJson = new ClientJson () {
+                Id = 2,
+                Name = "Github",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc).ToLocalTime (), // JSON deserialized to local
+            };
+
+            clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.AreNotEqual (Guid.Empty, clientData.Id);
+            Assert.AreEqual (2, clientData.RemoteId);
+            Assert.AreEqual ("Github", clientData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc), clientData.ModifiedAt);
+            Assert.AreEqual (workspaceData.Id, clientData.WorkspaceId);
+            Assert.IsFalse (clientData.IsDirty);
+            Assert.IsFalse (clientData.RemoteRejected);
+            Assert.IsNull (clientData.DeletedAt);
 
             // Warn the user that the test result might be invalid
             if (TimeZone.CurrentTimeZone.GetUtcOffset (DateTime.Now).TotalMinutes >= 0) {
@@ -155,202 +146,188 @@ namespace Toggl.Phoebe.Tests.Data.Json.Converters
 
         [Test]
         [Description ("Overwrite local non-dirty data regardless of the modification times.")]
-        public void ImportUpdatedOverwriteNonDirtyLocal ()
+        public async Task ImportUpdatedOverwriteNonDirtyLocal ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
-                });
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    Name = "Github",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 9, 59, 0, DateTimeKind.Utc).ToLocalTime (), // Remote modified is less than local
-                };
-
-                clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.AreEqual ("Github", clientData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 9, 59, 0, DateTimeKind.Utc), clientData.ModifiedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
+            });
+            var clientJson = new ClientJson () {
+                Id = 2,
+                Name = "Github",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 9, 59, 0, DateTimeKind.Utc).ToLocalTime (), // Remote modified is less than local
+            };
+
+            clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.AreEqual ("Github", clientData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 9, 59, 0, DateTimeKind.Utc), clientData.ModifiedAt);
         }
 
         [Test]
         [Description ("Overwrite dirty local data if imported data has a modification time greater than local.")]
-        public void ImportUpdatedOverwriteDirtyLocal ()
+        public async Task ImportUpdatedOverwriteDirtyLocal ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 9, 59, 59, DateTimeKind.Utc),
-                    IsDirty = true,
-                });
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    Name = "Github",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
-                };
-
-                clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.AreEqual ("Github", clientData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), clientData.ModifiedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 9, 59, 59, DateTimeKind.Utc),
+                IsDirty = true,
+            });
+            var clientJson = new ClientJson () {
+                Id = 2,
+                Name = "Github",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
+            };
+
+            clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.AreEqual ("Github", clientData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), clientData.ModifiedAt);
         }
 
         [Test]
         [Description ("Overwrite local dirty-but-rejected data regardless of the modification times.")]
-        public void ImportUpdatedOverwriteRejectedLocal ()
+        public async Task ImportUpdatedOverwriteRejectedLocal ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc),
-                    IsDirty = true,
-                    RemoteRejected = true,
-                });
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    Name = "Github",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
-                };
-
-                clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.AreEqual ("Github", clientData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), clientData.ModifiedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc),
+                IsDirty = true,
+                RemoteRejected = true,
+            });
+            var clientJson = new ClientJson () {
+                Id = 2,
+                Name = "Github",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
+            };
+
+            clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.AreEqual ("Github", clientData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), clientData.ModifiedAt);
         }
 
         [Test]
         [Description ("Keep local dirty data when imported data has same or older modification time.")]
-        public void ImportUpdatedKeepDirtyLocal ()
+        public async Task ImportUpdatedKeepDirtyLocal ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
-                    IsDirty = true,
-                });
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    Name = "Github",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
-                };
-
-                clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.AreEqual ("", clientData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), clientData.ModifiedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
+                IsDirty = true,
+            });
+            var clientJson = new ClientJson () {
+                Id = 2,
+                Name = "Github",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
+            };
+
+            clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.AreEqual ("", clientData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), clientData.ModifiedAt);
         }
 
         [Test]
-        public void ImportMissingWorkspace ()
+        public async Task ImportMissingWorkspace ()
         {
-            RunAsync (async delegate {
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    Name = "Github",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                };
+            var clientJson = new ClientJson () {
+                Id = 2,
+                Name = "Github",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            };
 
-                var clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.AreNotEqual (Guid.Empty, clientData.WorkspaceId);
+            var clientData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.AreNotEqual (Guid.Empty, clientData.WorkspaceId);
 
-                var rows = await DataStore.Table<WorkspaceData> ().Where (m => m.Id == clientData.WorkspaceId).ToListAsync ();
-                var workspaceData = rows.FirstOrDefault ();
-                Assert.IsNotNull (workspaceData);
-                Assert.IsNotNull (workspaceData.RemoteId);
-                Assert.AreEqual (DateTime.MinValue, workspaceData.ModifiedAt);
-            });
+            var rows = await DataStore.Table<WorkspaceData> ().Where (m => m.Id == clientData.WorkspaceId).ToListAsync ();
+            var workspaceData = rows.FirstOrDefault ();
+            Assert.IsNotNull (workspaceData);
+            Assert.IsNotNull (workspaceData.RemoteId);
+            Assert.AreEqual (DateTime.MinValue, workspaceData.ModifiedAt);
         }
 
         [Test]
-        public void ImportDeleted ()
+        public async Task ImportDeleted ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "Github",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
-
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    DeletedAt = new DateTime (2014, 1, 4),
-                };
-
-                var ret = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.IsNull (ret);
-
-                var rows = await DataStore.Table<ClientData> ().Where (m => m.Id == clientData.Id).ToListAsync ();
-                Assert.That (rows, Has.Exactly (0).Count);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "Github",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            });
+
+            var clientJson = new ClientJson () {
+                Id = 2,
+                DeletedAt = new DateTime (2014, 1, 4),
+            };
+
+            var ret = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.IsNull (ret);
+
+            var rows = await DataStore.Table<ClientData> ().Where (m => m.Id == clientData.Id).ToListAsync ();
+            Assert.That (rows, Has.Exactly (0).Count);
         }
 
         [Test]
-        public void ImportPastDeleted ()
+        public async Task ImportPastDeleted ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var clientData = await DataStore.PutAsync (new ClientData () {
-                    RemoteId = 2,
-                    Name = "Github",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
-
-                var clientJson = new ClientJson () {
-                    Id = 2,
-                    DeletedAt = new DateTime (2014, 1, 2),
-                };
-
-                var ret = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
-                Assert.IsNull (ret);
-
-                var rows = await DataStore.Table<ClientData> ().Where (m => m.Id == clientData.Id).ToListAsync ();
-                Assert.That (rows, Has.Exactly (0).Count);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var clientData = await DataStore.PutAsync (new ClientData () {
+                RemoteId = 2,
+                Name = "Github",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            });
+
+            var clientJson = new ClientJson () {
+                Id = 2,
+                DeletedAt = new DateTime (2014, 1, 2),
+            };
+
+            var ret = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, clientJson));
+            Assert.IsNull (ret);
+
+            var rows = await DataStore.Table<ClientData> ().Where (m => m.Id == clientData.Id).ToListAsync ();
+            Assert.That (rows, Has.Exactly (0).Count);
         }
     }
 }

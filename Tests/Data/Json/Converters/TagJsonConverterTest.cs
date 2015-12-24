@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Toggl.Phoebe.Data.DataObjects;
 using Toggl.Phoebe.Data.Json;
 using Toggl.Phoebe.Data.Json.Converters;
+using System.Threading.Tasks;
 
 namespace Toggl.Phoebe.Tests.Data.Json.Converters
 {
@@ -11,141 +12,131 @@ namespace Toggl.Phoebe.Tests.Data.Json.Converters
     {
         private TagJsonConverter converter;
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
             converter = new TagJsonConverter ();
         }
 
         [Test]
-        public void ExportExisting ()
+        public async Task ExportExisting ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "Mobile",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
-
-                var json = await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, tagData));
-                Assert.AreEqual (2, json.Id);
-                Assert.AreEqual ("Mobile", json.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 3), json.ModifiedAt);
-                Assert.AreEqual (1, json.WorkspaceId);
-                Assert.IsNull (json.DeletedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "Mobile",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            });
+
+            var json = await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, tagData));
+            Assert.AreEqual (2, json.Id);
+            Assert.AreEqual ("Mobile", json.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 3), json.ModifiedAt);
+            Assert.AreEqual (1, json.WorkspaceId);
+            Assert.IsNull (json.DeletedAt);
         }
 
         [Test]
-        public void ExportInvalidWorkspace ()
+        public async Task ExportInvalidWorkspace ()
         {
             TagData tagData = null;
 
-            RunAsync (async delegate {
-                tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "Mobile",
-                    WorkspaceId = Guid.NewGuid (),
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
+            tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "Mobile",
+                WorkspaceId = Guid.NewGuid (),
+                ModifiedAt = new DateTime (2014, 1, 3),
             });
 
-            Assert.That (() => RunAsync (async delegate {
+            Assert.That (async () => {
                 await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, tagData));
-            }), Throws.Exception.TypeOf<RelationRemoteIdMissingException> ());
+            }, Throws.Exception.TypeOf<RelationRemoteIdMissingException> ());
         }
 
         [Test]
-        public void ExportNew ()
+        public async Task ExportNew ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    Name = "Mobile",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
-
-                var json = await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, tagData));
-                Assert.IsNull (json.Id);
-                Assert.AreEqual ("Mobile", json.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 3), json.ModifiedAt);
-                Assert.AreEqual (1, json.WorkspaceId);
-                Assert.IsNull (json.DeletedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                Name = "Mobile",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            });
+
+            var json = await DataStore.ExecuteInTransactionAsync (ctx => converter.Export (ctx, tagData));
+            Assert.IsNull (json.Id);
+            Assert.AreEqual ("Mobile", json.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 3), json.ModifiedAt);
+            Assert.AreEqual (1, json.WorkspaceId);
+            Assert.IsNull (json.DeletedAt);
         }
 
         [Test]
-        public void ImportNew ()
+        public async Task ImportNew ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    Name = "Mobile",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                };
-
-                var tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.AreNotEqual (Guid.Empty, tagData.Id);
-                Assert.AreEqual (2, tagData.RemoteId);
-                Assert.AreEqual ("Mobile", tagData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 3), tagData.ModifiedAt);
-                Assert.AreEqual (workspaceData.Id, tagData.WorkspaceId);
-                Assert.IsFalse (tagData.IsDirty);
-                Assert.IsFalse (tagData.RemoteRejected);
-                Assert.IsNull (tagData.DeletedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagJson = new TagJson () {
+                Id = 2,
+                Name = "Mobile",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            };
+
+            var tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.AreNotEqual (Guid.Empty, tagData.Id);
+            Assert.AreEqual (2, tagData.RemoteId);
+            Assert.AreEqual ("Mobile", tagData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 3), tagData.ModifiedAt);
+            Assert.AreEqual (workspaceData.Id, tagData.WorkspaceId);
+            Assert.IsFalse (tagData.IsDirty);
+            Assert.IsFalse (tagData.RemoteRejected);
+            Assert.IsNull (tagData.DeletedAt);
         }
 
         [Test]
-        public void ImportUpdated ()
+        public async Task ImportUpdated ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
-                });
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    Name = "Mobile",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc).ToLocalTime (), // JSON deserialized to local
-                };
-
-                tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.AreNotEqual (Guid.Empty, tagData.Id);
-                Assert.AreEqual (2, tagData.RemoteId);
-                Assert.AreEqual ("Mobile", tagData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc), tagData.ModifiedAt);
-                Assert.AreEqual (workspaceData.Id, tagData.WorkspaceId);
-                Assert.IsFalse (tagData.IsDirty);
-                Assert.IsFalse (tagData.RemoteRejected);
-                Assert.IsNull (tagData.DeletedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
+            });
+            var tagJson = new TagJson () {
+                Id = 2,
+                Name = "Mobile",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc).ToLocalTime (), // JSON deserialized to local
+            };
+
+            tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.AreNotEqual (Guid.Empty, tagData.Id);
+            Assert.AreEqual (2, tagData.RemoteId);
+            Assert.AreEqual ("Mobile", tagData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc), tagData.ModifiedAt);
+            Assert.AreEqual (workspaceData.Id, tagData.WorkspaceId);
+            Assert.IsFalse (tagData.IsDirty);
+            Assert.IsFalse (tagData.RemoteRejected);
+            Assert.IsNull (tagData.DeletedAt);
 
             // Warn the user that the test result might be invalid
             if (TimeZone.CurrentTimeZone.GetUtcOffset (DateTime.Now).TotalMinutes >= 0) {
@@ -155,202 +146,188 @@ namespace Toggl.Phoebe.Tests.Data.Json.Converters
 
         [Test]
         [Description ("Overwrite local non-dirty data regardless of the modification times.")]
-        public void ImportUpdatedOverwriteNonDirtyLocal ()
+        public async Task ImportUpdatedOverwriteNonDirtyLocal ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
-                });
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    Name = "Mobile",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 9, 59, 0, DateTimeKind.Utc).ToLocalTime (), // Remote modified is less than local
-                };
-
-                tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.AreEqual ("Mobile", tagData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 9, 59, 0, DateTimeKind.Utc), tagData.ModifiedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
+            });
+            var tagJson = new TagJson () {
+                Id = 2,
+                Name = "Mobile",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 9, 59, 0, DateTimeKind.Utc).ToLocalTime (), // Remote modified is less than local
+            };
+
+            tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.AreEqual ("Mobile", tagData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 9, 59, 0, DateTimeKind.Utc), tagData.ModifiedAt);
         }
 
         [Test]
         [Description ("Overwrite dirty local data if imported data has a modification time greater than local.")]
-        public void ImportUpdatedOverwriteDirtyLocal ()
+        public async Task ImportUpdatedOverwriteDirtyLocal ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 9, 59, 59, DateTimeKind.Utc),
-                    IsDirty = true,
-                });
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    Name = "Mobile",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
-                };
-
-                tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.AreEqual ("Mobile", tagData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), tagData.ModifiedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 9, 59, 59, DateTimeKind.Utc),
+                IsDirty = true,
+            });
+            var tagJson = new TagJson () {
+                Id = 2,
+                Name = "Mobile",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
+            };
+
+            tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.AreEqual ("Mobile", tagData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), tagData.ModifiedAt);
         }
 
         [Test]
         [Description ("Overwrite local dirty-but-rejected data regardless of the modification times.")]
-        public void ImportUpdatedOverwriteRejectedLocal ()
+        public async Task ImportUpdatedOverwriteRejectedLocal ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc),
-                    IsDirty = true,
-                    RemoteRejected = true,
-                });
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    Name = "Mobile",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
-                };
-
-                tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.AreEqual ("Mobile", tagData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), tagData.ModifiedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 1, 0, DateTimeKind.Utc),
+                IsDirty = true,
+                RemoteRejected = true,
+            });
+            var tagJson = new TagJson () {
+                Id = 2,
+                Name = "Mobile",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
+            };
+
+            tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.AreEqual ("Mobile", tagData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), tagData.ModifiedAt);
         }
 
         [Test]
         [Description ("Keep local dirty data when imported data has same or older modification time.")]
-        public void ImportUpdatedKeepDirtyLocal ()
+        public async Task ImportUpdatedKeepDirtyLocal ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
-                    IsDirty = true,
-                });
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    Name = "Mobile",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
-                };
-
-                tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.AreEqual ("", tagData.Name);
-                Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), tagData.ModifiedAt);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc),
+                IsDirty = true,
+            });
+            var tagJson = new TagJson () {
+                Id = 2,
+                Name = "Mobile",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc).ToLocalTime (),
+            };
+
+            tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.AreEqual ("", tagData.Name);
+            Assert.AreEqual (new DateTime (2014, 1, 2, 10, 0, 0, DateTimeKind.Utc), tagData.ModifiedAt);
         }
 
         [Test]
-        public void ImportMissingWorkspace ()
+        public async Task ImportMissingWorkspace ()
         {
-            RunAsync (async delegate {
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    Name = "Mobile",
-                    WorkspaceId = 1,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                };
+            var tagJson = new TagJson () {
+                Id = 2,
+                Name = "Mobile",
+                WorkspaceId = 1,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            };
 
-                var tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.AreNotEqual (Guid.Empty, tagData.WorkspaceId);
+            var tagData = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.AreNotEqual (Guid.Empty, tagData.WorkspaceId);
 
-                var rows = await DataStore.Table<WorkspaceData> ().Where (m => m.Id == tagData.WorkspaceId).ToListAsync ();
-                var workspaceData = rows.FirstOrDefault ();
-                Assert.IsNotNull (workspaceData);
-                Assert.IsNotNull (workspaceData.RemoteId);
-                Assert.AreEqual (DateTime.MinValue, workspaceData.ModifiedAt);
-            });
+            var rows = await DataStore.Table<WorkspaceData> ().Where (m => m.Id == tagData.WorkspaceId).ToListAsync ();
+            var workspaceData = rows.FirstOrDefault ();
+            Assert.IsNotNull (workspaceData);
+            Assert.IsNotNull (workspaceData.RemoteId);
+            Assert.AreEqual (DateTime.MinValue, workspaceData.ModifiedAt);
         }
 
         [Test]
-        public void ImportDeleted ()
+        public async Task ImportDeleted ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "Mobile",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
-
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    DeletedAt = new DateTime (2014, 1, 4),
-                };
-
-                var ret = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.IsNull (ret);
-
-                var rows = await DataStore.Table<TagData> ().Where (m => m.Id == tagData.Id).ToListAsync ();
-                Assert.That (rows, Has.Exactly (0).Count);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "Mobile",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            });
+
+            var tagJson = new TagJson () {
+                Id = 2,
+                DeletedAt = new DateTime (2014, 1, 4),
+            };
+
+            var ret = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.IsNull (ret);
+
+            var rows = await DataStore.Table<TagData> ().Where (m => m.Id == tagData.Id).ToListAsync ();
+            Assert.That (rows, Has.Exactly (0).Count);
         }
 
         [Test]
-        public void ImportPastDeleted ()
+        public async Task ImportPastDeleted ()
         {
-            RunAsync (async delegate {
-                var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
-                    RemoteId = 1,
-                    Name = "Test",
-                    ModifiedAt = new DateTime (2014, 1, 2),
-                });
-                var tagData = await DataStore.PutAsync (new TagData () {
-                    RemoteId = 2,
-                    Name = "Mobile",
-                    WorkspaceId = workspaceData.Id,
-                    ModifiedAt = new DateTime (2014, 1, 3),
-                });
-
-                var tagJson = new TagJson () {
-                    Id = 2,
-                    DeletedAt = new DateTime (2014, 1, 2),
-                };
-
-                var ret = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
-                Assert.IsNull (ret);
-
-                var rows = await DataStore.Table<TagData> ().Where (m => m.Id == tagData.Id).ToListAsync ();
-                Assert.That (rows, Has.Exactly (0).Count);
+            var workspaceData = await DataStore.PutAsync (new WorkspaceData () {
+                RemoteId = 1,
+                Name = "Test",
+                ModifiedAt = new DateTime (2014, 1, 2),
             });
+            var tagData = await DataStore.PutAsync (new TagData () {
+                RemoteId = 2,
+                Name = "Mobile",
+                WorkspaceId = workspaceData.Id,
+                ModifiedAt = new DateTime (2014, 1, 3),
+            });
+
+            var tagJson = new TagJson () {
+                Id = 2,
+                DeletedAt = new DateTime (2014, 1, 2),
+            };
+
+            var ret = await DataStore.ExecuteInTransactionAsync (ctx => converter.Import (ctx, tagJson));
+            Assert.IsNull (ret);
+
+            var rows = await DataStore.Table<TagData> ().Where (m => m.Id == tagData.Id).ToListAsync ();
+            Assert.That (rows, Has.Exactly (0).Count);
         }
     }
 }

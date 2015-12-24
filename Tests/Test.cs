@@ -15,23 +15,11 @@ namespace Toggl.Phoebe.Tests
     public abstract class Test
     {
         private string databasePath;
-        private MainThreadSynchronizationContext syncContext;
-
-        [TestFixtureSetUp]
-        public virtual void Init ()
-        {
-        }
-
-        [TestFixtureTearDown]
-        public virtual void Cleanup ()
-        {
-        }
 
         [SetUp]
-        public virtual void SetUp ()
+        public virtual async Task SetUp ()
         {
-            syncContext = new MainThreadSynchronizationContext ();
-            SynchronizationContext.SetSynchronizationContext (syncContext);
+            await Task.Delay (0);
 
             // Create MessageBus egerly to avoid it being created in the background thread with invalid synchronization context.
             ServiceContainer.Register<MessageBus> (new MessageBus ());
@@ -47,17 +35,10 @@ namespace Toggl.Phoebe.Tests
         }
 
         [TearDown]
-        public virtual void TearDown ()
+        public virtual async Task TearDown ()
         {
-            RunAsync (async delegate {
-                // Use an empty transaction to ensure that the SQLiteDataStore has completed all scheduled jobs:
-                await DataStore.ExecuteInTransactionAsync ((ctx) => {
-                });
-            });
-
-            // Make sure all of the scheduled actions have been completed
-            while (syncContext.Run ()) {
-            }
+            // Use an empty transaction to ensure that the SQLiteDataStore has completed all scheduled jobs:
+            await DataStore.ExecuteInTransactionAsync (ctx => {});
 
             ServiceContainer.Clear ();
 
@@ -92,18 +73,6 @@ namespace Toggl.Phoebe.Tests
             await tcs.Task;
 
             MessageBus.Send (new AuthChangedMessage (authManager, AuthChangeReason.Login));
-        }
-
-        protected void RunAsync (Func<Task> fn)
-        {
-            var awaiter = fn ().GetAwaiter ();
-
-            // Process jobs and wait for the task to complete
-            while (syncContext.Run () || !awaiter.IsCompleted) {
-            }
-
-            // Propagate exceptions
-            awaiter.GetResult ();
         }
 
         protected MessageBus MessageBus

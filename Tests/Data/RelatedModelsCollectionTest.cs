@@ -18,19 +18,19 @@ namespace Toggl.Phoebe.Tests.Data
             get { return ServiceContainer.Resolve<IModelStore> (); }
         }
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
+            await base.SetUp ();
 
             tmpDb = Path.GetTempFileName ();
             ServiceContainer.Register<IModelStore> (new TestSqliteStore (tmpDb));
         }
 
-        public override void TearDown ()
+        public override async Task TearDown ()
         {
             ModelStore.Commit ();
 
-            base.TearDown ();
+            await base.TearDown ();
 
             File.Delete (tmpDb);
             tmpDb = null;

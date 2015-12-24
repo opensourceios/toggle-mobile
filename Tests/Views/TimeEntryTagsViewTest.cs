@@ -17,242 +17,215 @@ namespace Toggl.Phoebe.Tests.Views
         TagData tag2;
         TagData tag3;
 
-        public override void SetUp ()
+        public override async Task SetUp ()
         {
-            base.SetUp ();
-
-            RunAsync (async delegate {
-                await CreateTestData ();
-            });
+            await base.SetUp ();
+            await CreateTestData ();
         }
 
         [Test]
-        public void TestInitialState ()
+        public async Task TestInitialState ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                Assert.AreEqual (2, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray (DefaultTag, "Tag #2"),
-                    view.Data.ToArray ()
-                );
-            });
+            Assert.AreEqual (2, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray (DefaultTag, "Tag #2"),
+                view.Data.ToArray ()
+            );
         }
 
         [Test]
-        public void TestInvalidTimeEntry ()
+        public async Task TestInvalidTimeEntry ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (Guid.Empty);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (Guid.Empty);
+            await WaitForLoaded (view);
 
-                Assert.AreEqual (0, view.Count);
-            });
+            Assert.AreEqual (0, view.Count);
         }
 
         [Test]
-        public void TestAddInvalidManyToMany ()
+        public async Task TestAddInvalidManyToMany ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                await DataStore.PutAsync (new TimeEntryTagData () {
-                    TimeEntryId = timeEntry.Id,
-                    TagId = Guid.Empty,
-                });
-
-                Assert.AreEqual (2, view.Count);
+            await DataStore.PutAsync (new TimeEntryTagData () {
+                TimeEntryId = timeEntry.Id,
+                TagId = Guid.Empty,
             });
+
+            Assert.AreEqual (2, view.Count);
         }
 
         [Test]
-        public void TestAddManyToMany ()
+        public async Task TestAddManyToMany ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                var updateTask = WaitForUpdates (view);
+            var updateTask = WaitForUpdates (view);
 
-                await DataStore.PutAsync (new TimeEntryTagData () {
-                    TimeEntryId = timeEntry.Id,
-                    TagId = tag3.Id,
-                });
-
-                // Wait for the tag to be loaded and the view be updated:
-                await updateTask;
-
-                Assert.AreEqual (3, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray (DefaultTag, "Tag #2", "Tag #3"),
-                    view.Data.ToArray ()
-                );
+            await DataStore.PutAsync (new TimeEntryTagData () {
+                TimeEntryId = timeEntry.Id,
+                TagId = tag3.Id,
             });
+
+            // Wait for the tag to be loaded and the view be updated:
+            await updateTask;
+
+            Assert.AreEqual (3, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray (DefaultTag, "Tag #2", "Tag #3"),
+                view.Data.ToArray ()
+            );
         }
 
         [Test]
-        public void TestAddManyToManyForOther ()
+        public async Task TestAddManyToManyForOther ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                var updateTask = WaitForUpdates (view);
+            var updateTask = WaitForUpdates (view);
 
-                await DataStore.PutAsync (new TimeEntryTagData () {
-                    TimeEntryId = Guid.NewGuid (),
-                    TagId = tag3.Id,
-                });
-
-                // Wait to be sure the view has had a chance to ignore this relation:
-                await Task.WhenAny (updateTask, Task.Delay (10));
-
-                Assert.AreEqual (2, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray (DefaultTag, "Tag #2"),
-                    view.Data.ToArray ()
-                );
+            await DataStore.PutAsync (new TimeEntryTagData () {
+                TimeEntryId = Guid.NewGuid (),
+                TagId = tag3.Id,
             });
+
+            // Wait to be sure the view has had a chance to ignore this relation:
+            await Task.WhenAny (updateTask, Task.Delay (10));
+
+            Assert.AreEqual (2, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray (DefaultTag, "Tag #2"),
+                view.Data.ToArray ()
+            );
         }
 
         [Test]
-        public void TestReplaceManyToMany ()
+        public async Task TestReplaceManyToMany ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                var inter = await GetByRemoteId<TimeEntryTagData> (2);
-                await DataStore.DeleteAsync (inter);
-                await DataStore.PutAsync (new TimeEntryTagData () {
-                    TimeEntryId = timeEntry.Id,
-                    TagId = tag2.Id,
-                });
-
-                // We're not awaitng on the updated event as the view should update immediatelly as the TagData
-                // should still be cached.
-
-                Assert.AreEqual (2, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray (DefaultTag, "Tag #2"),
-                    view.Data.ToArray ()
-                );
+            var inter = await GetByRemoteId<TimeEntryTagData> (2);
+            await DataStore.DeleteAsync (inter);
+            await DataStore.PutAsync (new TimeEntryTagData () {
+                TimeEntryId = timeEntry.Id,
+                TagId = tag2.Id,
             });
+
+            // We're not awaitng on the updated event as the view should update immediatelly as the TagData
+            // should still be cached.
+
+            Assert.AreEqual (2, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray (DefaultTag, "Tag #2"),
+                view.Data.ToArray ()
+            );
         }
 
         [Test]
-        public void TestDeleteManyToMany ()
+        public async Task TestDeleteManyToMany ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                var inter = await GetByRemoteId<TimeEntryTagData> (1);
-                await DataStore.DeleteAsync (inter);
+            var inter = await GetByRemoteId<TimeEntryTagData> (1);
+            await DataStore.DeleteAsync (inter);
 
-                Assert.AreEqual (1, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray ("Tag #2"),
-                    view.Data.ToArray ()
-                );
-            });
+            Assert.AreEqual (1, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray ("Tag #2"),
+                view.Data.ToArray ()
+            );
         }
 
         [Test]
-        public void TestDeleteTag ()
+        public async Task TestDeleteTag ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                await DataStore.DeleteAsync (tag2);
+            await DataStore.DeleteAsync (tag2);
 
-                Assert.AreEqual (1, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray (DefaultTag),
-                    view.Data.ToArray ()
-                );
-            });
+            Assert.AreEqual (1, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray (DefaultTag),
+                view.Data.ToArray ()
+            );
         }
 
         [Test]
-        public void TestRenameTag ()
+        public async Task TestRenameTag ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                tag2.Name = "A tag";
-                await DataStore.PutAsync (tag2);
+            tag2.Name = "A tag";
+            await DataStore.PutAsync (tag2);
 
-                Assert.AreEqual (2, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray ("A tag", DefaultTag),
-                    view.Data.ToArray ()
-                );
-            });
+            Assert.AreEqual (2, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray ("A tag", DefaultTag),
+                view.Data.ToArray ()
+            );
         }
 
         [Test]
-        public void TestMarkDeletedTag ()
+        public async Task TestMarkDeletedTag ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                tag2.DeletedAt = Time.UtcNow;
-                await DataStore.PutAsync (tag2);
+            tag2.DeletedAt = Time.UtcNow;
+            await DataStore.PutAsync (tag2);
 
-                Assert.AreEqual (1, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray (DefaultTag),
-                    view.Data.ToArray ()
-                );
-            });
+            Assert.AreEqual (1, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray (DefaultTag),
+                view.Data.ToArray ()
+            );
         }
 
 
         [Test]
-        public void TestMarkDeletedManyToMany ()
+        public async Task TestMarkDeletedManyToMany ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                var inter = await GetByRemoteId<TimeEntryTagData> (1);
-                inter.DeletedAt = Time.UtcNow;
-                await DataStore.PutAsync (inter);
+            var inter = await GetByRemoteId<TimeEntryTagData> (1);
+            inter.DeletedAt = Time.UtcNow;
+            await DataStore.PutAsync (inter);
 
-                Assert.AreEqual (1, view.Count);
-                Assert.AreEqual (
-                    MakeTagsArray ("Tag #2"),
-                    view.Data.ToArray ()
-                );
-            });
+            Assert.AreEqual (1, view.Count);
+            Assert.AreEqual (
+                MakeTagsArray ("Tag #2"),
+                view.Data.ToArray ()
+            );
         }
 
         [Test]
-        public void TestNonDefault ()
+        public async Task TestNonDefault ()
         {
-            RunAsync (async delegate {
-                var view = new TimeEntryTagsView (timeEntry.Id);
-                await WaitForLoaded (view);
+            var view = new TimeEntryTagsView (timeEntry.Id);
+            await WaitForLoaded (view);
 
-                Assert.IsTrue (view.HasNonDefault);
+            Assert.IsTrue (view.HasNonDefault);
 
-                var inter = await GetByRemoteId<TimeEntryTagData> (2);
-                await DataStore.DeleteAsync (inter);
+            var inter = await GetByRemoteId<TimeEntryTagData> (2);
+            await DataStore.DeleteAsync (inter);
 
-                Assert.IsFalse (view.HasNonDefault);
+            Assert.IsFalse (view.HasNonDefault);
 
-                inter = await GetByRemoteId<TimeEntryTagData> (1);
-                await DataStore.DeleteAsync (inter);
+            inter = await GetByRemoteId<TimeEntryTagData> (1);
+            await DataStore.DeleteAsync (inter);
 
-                Assert.IsFalse (view.HasNonDefault);
-            });
+            Assert.IsFalse (view.HasNonDefault);
         }
 
         private string[] MakeTagsArray (params string[] tags)

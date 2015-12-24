@@ -12,53 +12,47 @@ namespace Toggl.Phoebe.Tests.Data
     public class DataCacheTest : Test
     {
         [Test]
-        public void TestGetInvalid ()
+        public async Task TestGetInvalid ()
         {
-            RunAsync (async delegate {
-                var cache = new DataCache ();
-                var data = await cache.GetAsync<WorkspaceData> (Guid.NewGuid ());
-                Assert.IsNull (data);
-            });
+            var cache = new DataCache ();
+            var data = await cache.GetAsync<WorkspaceData> (Guid.NewGuid ());
+            Assert.IsNull (data);
         }
 
         [Test]
-        public void TestGetHit ()
+        public async Task TestGetHit ()
         {
-            RunAsync (async delegate {
-                var data = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Testing",
-                });
-                var pk = data.Id;
-
-                var cache = new DataCache ();
-                data = await cache.GetAsync<WorkspaceData> (pk);
-                Assert.IsNotNull (data);
-                Assert.AreEqual (pk, data.Id);
-                Assert.AreEqual ("Testing", data.Name);
+            var data = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Testing",
             });
+            var pk = data.Id;
+
+            var cache = new DataCache ();
+            data = await cache.GetAsync<WorkspaceData> (pk);
+            Assert.IsNotNull (data);
+            Assert.AreEqual (pk, data.Id);
+            Assert.AreEqual ("Testing", data.Name);
         }
 
         [Test]
-        public void TestGetHitMultiple ()
+        public async Task TestGetHitMultiple ()
         {
-            RunAsync (async delegate {
-                var data = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Testing",
-                });
-                var pk = data.Id;
-
-                var cache = new DataCache ();
-                var tasks = new List<Task<WorkspaceData>> (10);
-                for (var i = 0; i < 2; i++) {
-                    tasks.Add (cache.GetAsync<WorkspaceData> (pk));
-                    tasks.Add (cache.GetAsync<WorkspaceData> (pk));
-                }
-
-                await Task.WhenAll (tasks);
-                var results = tasks.Select (t => t.Result);
-                data = results.First ();
-                Assert.That (results, Has.All.Matches<WorkspaceData> (r => Object.ReferenceEquals (r, data)));
+            var data = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Testing",
             });
+            var pk = data.Id;
+
+            var cache = new DataCache ();
+            var tasks = new List<Task<WorkspaceData>> (10);
+            for (var i = 0; i < 2; i++) {
+                tasks.Add (cache.GetAsync<WorkspaceData> (pk));
+                tasks.Add (cache.GetAsync<WorkspaceData> (pk));
+            }
+
+            await Task.WhenAll (tasks);
+            var results = tasks.Select (t => t.Result);
+            data = results.First ();
+            Assert.That (results, Has.All.Matches<WorkspaceData> (r => Object.ReferenceEquals (r, data)));
         }
 
         [Test]
@@ -72,141 +66,129 @@ namespace Toggl.Phoebe.Tests.Data
         }
 
         [Test]
-        public void TestTryGetMiss ()
+        public async Task TestTryGetMiss ()
         {
-            RunAsync (async delegate {
-                var data = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Testing",
-                });
-                var pk = data.Id;
-
-                var cache = new DataCache ();
-                var success = cache.TryGetCached (pk, out data);
-                Assert.IsFalse (success);
-                Assert.IsNull (data);
+            var data = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Testing",
             });
+            var pk = data.Id;
+
+            var cache = new DataCache ();
+            var success = cache.TryGetCached (pk, out data);
+            Assert.IsFalse (success);
+            Assert.IsNull (data);
         }
 
         [Test]
-        public void TestTryGetLoading ()
+        public async Task TestTryGetLoading ()
         {
-            RunAsync (async delegate {
-                var data = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Testing",
-                });
-                var pk = data.Id;
-
-                var cache = new DataCache ();
-                cache.GetAsync<WorkspaceData> (pk);
-
-                var success = cache.TryGetCached (pk, out data);
-                if (success) {
-                    Assert.IsNotNull (data);
-                    Assert.Inconclusive ("Data was loaded before we could check that cache was empty. If it happens all the time, there is a problem.");
-                } else {
-                    Assert.IsNull (data);
-                }
+            var data = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Testing",
             });
-        }
+            var pk = data.Id;
 
-        [Test]
-        public void TestTryGetHit ()
-        {
-            RunAsync (async delegate {
-                var data = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Testing",
-                });
-                var pk = data.Id;
+            var cache = new DataCache ();
+            await cache.GetAsync<WorkspaceData> (pk);
 
-                var cache = new DataCache ();
-                await cache.GetAsync<WorkspaceData> (pk);
-
-                var success = cache.TryGetCached (pk, out data);
-                Assert.IsTrue (success);
+            var success = cache.TryGetCached (pk, out data);
+            if (success) {
                 Assert.IsNotNull (data);
-                Assert.AreEqual (pk, data.Id);
-            });
+                Assert.Inconclusive ("Data was loaded before we could check that cache was empty. If it happens all the time, there is a problem.");
+            } else {
+                Assert.IsNull (data);
+            }
         }
 
         [Test]
-        public void TestTryGetTrimSize ()
+        public async Task TestTryGetHit ()
         {
-            RunAsync (async delegate {
-                var pks = await DataStore.ExecuteInTransactionAsync (ctx => {
-                    var ids = new List<Guid> ();
+            var data = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Testing",
+            });
+            var pk = data.Id;
 
-                    for (var i = 0; i < 150; i++) {
-                        var ws = ctx.Put (new WorkspaceData () {
-                            Name = String.Format ("Space #{0}", i + 1),
-                        });
-                        ids.Add (ws.Id);
-                    }
+            var cache = new DataCache ();
+            await cache.GetAsync<WorkspaceData> (pk);
 
-                    return ids;
-                });
+            var success = cache.TryGetCached (pk, out data);
+            Assert.IsTrue (success);
+            Assert.IsNotNull (data);
+            Assert.AreEqual (pk, data.Id);
+        }
 
-                WorkspaceData data;
-                var datas = new List<WorkspaceData> ();
-                var cache = new DataCache (100, TimeSpan.FromMinutes (5));
-                foreach (var pk in pks) {
-                    data = await cache.GetAsync<WorkspaceData> (pk);
-                    Assert.NotNull (data);
+        [Test]
+        public async Task TestTryGetTrimSize ()
+        {
+            var pks = await DataStore.ExecuteInTransactionAsync (ctx => {
+                var ids = new List<Guid> ();
 
-                    datas.Add (data);
+                for (var i = 0; i < 150; i++) {
+                    var ws = ctx.Put (new WorkspaceData () {
+                        Name = String.Format ("Space #{0}", i + 1),
+                    });
+                    ids.Add (ws.Id);
                 }
 
-                var success = cache.TryGetCached<WorkspaceData> (pks.First (), out data);
-                Assert.IsFalse (success);
-
-                success = cache.TryGetCached<WorkspaceData> (pks.Last (), out data);
-                Assert.IsTrue (success);
+                return ids;
             });
+
+            WorkspaceData data;
+            var datas = new List<WorkspaceData> ();
+            var cache = new DataCache (100, TimeSpan.FromMinutes (5));
+            foreach (var pk in pks) {
+                data = await cache.GetAsync<WorkspaceData> (pk);
+                Assert.NotNull (data);
+
+                datas.Add (data);
+            }
+
+            var success = cache.TryGetCached<WorkspaceData> (pks.First (), out data);
+            Assert.IsFalse (success);
+
+            success = cache.TryGetCached<WorkspaceData> (pks.Last (), out data);
+            Assert.IsTrue (success);
         }
 
         [Test]
-        public void TestUpdateCached ()
+        public async Task TestUpdateCached ()
         {
-            RunAsync (async delegate {
-                var data = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Testing",
-                });
-                var pk = data.Id;
-
-                var cache = new DataCache ();
-                data = await cache.GetAsync<WorkspaceData> (pk);
-                Assert.IsNotNull (data);
-
-                await DataStore.PutAsync (new WorkspaceData () {
-                    Id = pk,
-                    Name = "Foo",
-                });
-
-                var success = cache.TryGetCached (pk, out data);
-                Assert.IsTrue (success);
-                Assert.IsNotNull (data);
-                Assert.AreEqual ("Foo", data.Name);
+            var data = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Testing",
             });
+            var pk = data.Id;
+
+            var cache = new DataCache ();
+            data = await cache.GetAsync<WorkspaceData> (pk);
+            Assert.IsNotNull (data);
+
+            await DataStore.PutAsync (new WorkspaceData () {
+                Id = pk,
+                Name = "Foo",
+            });
+
+            var success = cache.TryGetCached (pk, out data);
+            Assert.IsTrue (success);
+            Assert.IsNotNull (data);
+            Assert.AreEqual ("Foo", data.Name);
         }
 
         [Test]
-        public void TestEvictCached ()
+        public async Task TestEvictCached ()
         {
-            RunAsync (async delegate {
-                var data = await DataStore.PutAsync (new WorkspaceData () {
-                    Name = "Testing",
-                });
-                var pk = data.Id;
-
-                var cache = new DataCache ();
-                data = await cache.GetAsync<WorkspaceData> (pk);
-                Assert.IsNotNull (data);
-
-                await DataStore.DeleteAsync (data);
-
-                var success = cache.TryGetCached (pk, out data);
-                Assert.IsFalse (success);
-                Assert.IsNull (data);
+            var data = await DataStore.PutAsync (new WorkspaceData () {
+                Name = "Testing",
             });
+            var pk = data.Id;
+
+            var cache = new DataCache ();
+            data = await cache.GetAsync<WorkspaceData> (pk);
+            Assert.IsNotNull (data);
+
+            await DataStore.DeleteAsync (data);
+
+            var success = cache.TryGetCached (pk, out data);
+            Assert.IsFalse (success);
+            Assert.IsNull (data);
         }
     }
 }
