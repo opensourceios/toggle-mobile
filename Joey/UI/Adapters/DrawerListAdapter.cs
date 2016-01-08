@@ -15,12 +15,13 @@ namespace Toggl.Joey.UI.Adapters
         protected static readonly int ViewTypeDrawerSubItem = 1;
         public static readonly int TimerPageId = 0;
         public static readonly int ReportsPageId = 1;
-        public static readonly int ReportsWeekPageId = 5;
-        public static readonly int ReportsMonthPageId = 6;
-        public static readonly int ReportsYearPageId = 7;
+        public static readonly int ReportsWeekPageId = 6;
+        public static readonly int ReportsMonthPageId = 7;
+        public static readonly int ReportsYearPageId = 8;
         public static readonly int SettingsPageId = 2;
         public static readonly int LogoutPageId = 3;
         public static readonly int FeedbackPageId = 4;
+        public static readonly int CreateUserPageId = 5;
         private List<DrawerItem> rowItems;
         private readonly List<DrawerItem> collapsedRowItems;
         private readonly AuthManager authManager;
@@ -78,6 +79,12 @@ namespace Toggl.Joey.UI.Adapters
                 new DrawerItem () {
                     Id = LogoutPageId,
                     TextResId = Resource.String.MainDrawerLogout,
+                    ImageResId = Resource.Drawable.IcNavLogout,
+                    IsEnabled = true,
+                },
+                new DrawerItem () {
+                    Id = CreateUserPageId,
+                    TextResId = Resource.String.MainDrawerSignup,
                     ImageResId = Resource.Drawable.IcNavLogout,
                     IsEnabled = true,
                 }

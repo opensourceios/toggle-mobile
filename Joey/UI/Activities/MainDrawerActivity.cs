@@ -43,6 +43,7 @@ namespace Toggl.Joey.UI.Activities
         private readonly Lazy<SettingsListFragment> settingsFragment = new Lazy<SettingsListFragment> ();
         private readonly Lazy<ReportsPagerFragment> reportFragment = new Lazy<ReportsPagerFragment> ();
         private readonly Lazy<FeedbackFragment> feedbackFragment = new Lazy<FeedbackFragment> ();
+        private readonly Lazy<CreateUserFragment> createUserFragment = new Lazy<CreateUserFragment> ();
         private readonly List<int> pageStack = new List<int> ();
         private readonly Handler handler = new Handler ();
         private DrawerListAdapter drawerAdapter;
@@ -234,6 +235,10 @@ namespace Toggl.Joey.UI.Activities
                 SupportActionBar.SetTitle (Resource.String.MainDrawerFeedback);
                 drawerAdapter.ExpandCollapse (DrawerListAdapter.FeedbackPageId);
                 OpenFragment (feedbackFragment.Value);
+            } else if (id == DrawerListAdapter.CreateUserPageId) {
+                SupportActionBar.SetTitle (Resource.String.MainDrawerSignup);
+                drawerAdapter.ExpandCollapse (DrawerListAdapter.CreateUserPageId);
+                OpenFragment (createUserFragment.Value);
             } else {
                 SupportActionBar.SetTitle (Resource.String.MainDrawerTimer);
                 OpenFragment (trackingFragment.Value);
@@ -298,10 +303,12 @@ namespace Toggl.Joey.UI.Activities
                 OpenPage (DrawerListAdapter.ReportsYearPageId);
             } else if (e.Id == DrawerListAdapter.SettingsPageId) {
                 OpenPage (DrawerListAdapter.SettingsPageId);
-
             } else if (e.Id == DrawerListAdapter.FeedbackPageId) {
                 OpenPage (DrawerListAdapter.FeedbackPageId);
+            } else if (e.Id == DrawerListAdapter.CreateUserPageId) {
+                OpenPage (DrawerListAdapter.CreateUserPageId);
             }
+
 
             DrawerLayout.CloseDrawers ();
         }

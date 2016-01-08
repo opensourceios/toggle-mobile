@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:padding="15dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/CreateUserIntroText"
+            android:textColor="@color/light_gray"
+            android:textSize="15dp"
+            android:maxLines="4"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center" />
+        <EditText
+            android:inputType="textEmailAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/CreateUserEmailEditText"
+            android:hint="@string/LoginEmailHint"
+            android:layout_marginTop="25dp" />
+        <EditText
+            android:inputType="textPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/CreateUserPasswordEditText"
+            android:hint="@string/LoginPasswordHint"
+            android:layout_marginTop="15dp" />
+        <Button
+            android:id="@+id/CreateUserButton"
+            style="@style/Button.FeedbackSubmitButton"
+            android:text="@string/CreateUserButtonText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp" />
+    </LinearLayout>
+</ScrollView>

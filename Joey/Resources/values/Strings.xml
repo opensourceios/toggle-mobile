@@ -113,6 +113,7 @@
     <string name="MainDrawerFeedback">Feedback</string>
     <string name="MainDrawerSettings">Settings</string>
     <string name="MainDrawerLogout">Log out</string>
+    <string name="MainDrawerSignup">Register</string>
     <string name="ChangeTimeEntryDurationDialogTitle">Set duration</string>
     <string name="ChangeTimeEntryDurationDialogCancel">Cancel</string>
     <string name="ChangeTimeEntryDurationDialogOk">Ok</string>
@@ -229,4 +230,6 @@
     <string name="TimeEntriesListFooterError">An error occurred downloading data</string>
     <string name="TimeEntriesListFooterTryAgain">Try again</string>
     <string name="EditTimeEntrySyncFailed">This time entry has failed to sync correctly</string>
+    <string name="CreateUserIntroText">Create a user to get the full out of your Toggl app.</string>
+    <string name="CreateUserButtonText">Create user</string>
 </resources>

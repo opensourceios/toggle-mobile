@@ -198,6 +198,7 @@
     <Compile Include="Wear\WearDataProvider.cs" />
     <Compile Include="UI\Fragments\ChangeDateTimeDialogFragment.cs" />
     <Compile Include="UI\Adapters\RecyclerCollectionDataAdapter.cs" />
+    <Compile Include="UI\Fragments\CreateUserFragment.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -753,6 +754,7 @@
     <AndroidResource Include="Resources\drawable-mdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_delete_white_24dp.png" />
+    <AndroidResource Include="Resources\layout\CreateUserFragment.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>
