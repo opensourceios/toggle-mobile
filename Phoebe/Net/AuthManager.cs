@@ -56,7 +56,7 @@ namespace Toggl.Phoebe.Net
             subscriptionDataChange = bus.Subscribe<DataChangeMessage> (OnDataChange);
         }
 
-        private async void ReloadUser ()
+        public async void ReloadUser ()
         {
             if (User == null) {
                 return;
@@ -72,6 +72,7 @@ namespace Toggl.Phoebe.Net
             if (IsAuthenticated) {
                 throw new InvalidOperationException ("Cannot authenticate when old credentials still present.");
             }
+
             if (IsAuthenticating) {
                 throw new InvalidOperationException ("Another authentication is still in progress.");
             }
@@ -128,11 +129,9 @@ namespace Toggl.Phoebe.Net
                 var credStore = ServiceContainer.Resolve<ISettingsStore> ();
                 credStore.UserId = userData.Id;
                 credStore.ApiToken = userJson.ApiToken;
-                credStore.OfflineMode = userData.Name == "offlineUser";
 
                 User = userData;
                 Token = userJson.ApiToken;
-                OfflineMode = userData.Name == "offlineUser";
                 IsAuthenticated = true;
 
                 ServiceContainer.Resolve<MessageBus> ().Send (
@@ -152,6 +151,63 @@ namespace Toggl.Phoebe.Net
                 break;
             }
 
+            return AuthResult.Success;
+        }
+
+        private async Task<AuthResult> OfflineAuthenticateAsync ()
+        {
+            IsAuthenticating = true;
+
+            //Create dummy user and workspace.
+            var userJson = new UserJson () {
+                Id = 100,
+                Name = "offlineUser",
+                StartOfWeek = DayOfWeek.Monday,
+                Locale = "",
+                Email = "nouser@toggl.com",
+                Password = "no-password",
+                Timezone = Time.TimeZoneId,
+                DefaultWorkspaceId = 1000
+            };
+
+            var workspaceJson = new WorkspaceJson () {
+                Id = 1000,
+                Name = "Workspace",
+                IsPremium = false,
+                IsAdmin = false
+            };
+
+            try {
+                // Import the user into our database:
+                UserData userData;
+                try {
+                    var dataStore = ServiceContainer.Resolve<IDataStore> ();
+                    userData = await dataStore.ExecuteInTransactionAsync (ctx => userJson.Import (ctx));
+                    await dataStore.ExecuteInTransactionAsync (ctx => workspaceJson.Import (ctx));
+                } catch (Exception ex) {
+                    var log = ServiceContainer.Resolve<ILogger> ();
+                    log.Error (Tag, ex, "Failed to import authenticated user.");
+
+                    ServiceContainer.Resolve<MessageBus> ().Send (
+                        new AuthFailedMessage (this, AuthResult.SystemError, ex));
+                    return AuthResult.SystemError;
+                }
+
+                var credStore = ServiceContainer.Resolve<ISettingsStore> ();
+                credStore.UserId = userData.Id;
+                credStore.ApiToken = userJson.ApiToken;
+                credStore.OfflineMode = userData.Name == "offlineUser";
+
+                User = userData;
+                Token = userJson.ApiToken;
+                OfflineMode = userData.Name == "offlineUser";
+                IsAuthenticated = true;
+
+                ServiceContainer.Resolve<MessageBus> ().Send (
+                    new AuthChangedMessage (this, AuthChangeReason.NoUser));
+            } finally {
+                IsAuthenticating = false;
+            }
             return AuthResult.Success;
         }
 
@@ -192,6 +248,7 @@ namespace Toggl.Phoebe.Net
             var client = ServiceContainer.Resolve<ITogglClient> ();
 
             log.Info (Tag, "Signing up with email Google access token.");
+
             return AuthenticateAsync (() => client.Create (new UserJson () {
                 GoogleAccessToken = accessToken,
                 Timezone = Time.TimeZoneId,
@@ -200,24 +257,32 @@ namespace Toggl.Phoebe.Net
 
         public Task<AuthResult> SetupNoUserAsync ()
         {
-            OfflineMode = true;
-            var client = ServiceContainer.Resolve<ITogglClient> ();
-            var usr =  new UserJson () {
-                Id = 100,
-                Name = "offlineUser",
-                StartOfWeek = DayOfWeek.Monday,
-                Locale = "",
-                Email = "nouser@toggl.com",
-                Password = "no-password",
-                Timezone = Time.TimeZoneId,
-                DefaultWorkspaceId = 1000
-            };
-            return AuthenticateAsync (() => UserTask (usr), AuthChangeReason.NoUser, AccountCredentials.NoUser);
+            return OfflineAuthenticateAsync ();
         }
 
-        private async Task<UserJson> UserTask (UserJson user)
+        public async Task<UserJson> RegisterFromNouserAsync (string email, string password)
         {
-            return user;
+            var log = ServiceContainer.Resolve<ILogger> ();
+            var client = ServiceContainer.Resolve<ITogglClient> ();
+            var credStore = ServiceContainer.Resolve<ISettingsStore> ();
+
+            var userJson = await client.Create (new UserJson() {
+                Email = email,
+                Password = password,
+                Timezone = Time.TimeZoneId,
+            });
+
+            if (userJson != null) {
+                // For sync querys
+                credStore.UserId = userData.Id;
+                credStore.ApiToken = userJson.ApiToken;
+                credStore.OfflineMode = false;
+
+                Token = userJson.ApiToken;
+                OfflineMode = false;
+                IsAuthenticated = true;
+            }
+            return userJson;
         }
 
         public void Forget ()

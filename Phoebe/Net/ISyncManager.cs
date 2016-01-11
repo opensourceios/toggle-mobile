@@ -7,6 +7,8 @@ namespace Toggl.Phoebe.Net
     {
         void Run (SyncMode mode = SyncMode.Full);
 
+        void UploadUserData ();
+
         void RunTimeEntriesUpdate (DateTime startFrom, int daysLoad);
 
         bool IsRunning { get; }

@@ -91,6 +91,43 @@ namespace Toggl.Phoebe.Net
             }
         }
 
+        public async void UploadUserData ()
+        {
+            var authManager = ServiceContainer.Resolve<AuthManager> ();
+            if (!authManager.IsAuthenticated) {
+                return;
+            }
+            if (IsRunning) {
+                return;
+            }
+
+            var bus = ServiceContainer.Resolve<MessageBus> ();
+            var network = ServiceContainer.Resolve<INetworkPresence> ();
+
+            if (!network.IsNetworkPresent) {
+                return;
+            }
+
+            IsRunning = true;
+
+            // Unsubscribe from models commited messages (our actions trigger them as well,
+            // so need to ignore them to prevent infinite recursion.
+            if (subscriptionDataChange != null) {
+                bus.Unsubscribe (subscriptionDataChange);
+                subscriptionDataChange = null;
+            }
+
+            try {
+                // Make sure that the RunInBackground is actually started on a background thread
+                await await Task.Factory.StartNew (() => MergeNoUserData ());
+                LastRun = await await Task.Factory.StartNew (() => RunInBackground (SyncMode.Full, LastRun));
+            } finally {
+                IsRunning = false;
+                subscriptionDataChange = bus.Subscribe<DataChangeMessage> (OnDataChange);
+            }
+
+        }
+
         private async Task<DateTime?> RunInBackground (SyncMode mode, DateTime? lastRun)
         {
             var bus = ServiceContainer.Resolve<MessageBus> ();
@@ -148,6 +185,66 @@ namespace Toggl.Phoebe.Net
             }
 
             return lastRun;
+        }
+
+        private async Task MergeNoUserData ()
+        {
+            var bus = ServiceContainer.Resolve<MessageBus> ();
+            var log = ServiceContainer.Resolve<ILogger> ();
+            var client = ServiceContainer.Resolve<ITogglClient> ();
+            var store = ServiceContainer.Resolve<IDataStore> ();
+
+            var syncDuration = Stopwatch.StartNew ();
+
+            bool hasErrors = false;
+            Exception ex = null;
+            try {
+
+                var serverData = await client.GetChanges (null).ConfigureAwait (false);
+
+                await store.ExecuteInTransactionAsync (ctx => serverData.User.Import (ctx));
+
+                var workspace = store.ExecuteInTransactionAsync (ctx => serverData.Workspaces.ElementAt (0).Import (ctx));
+
+                var prjTbl = await store.GetTableNameAsync<ProjectData>();
+                var cltTbl = await store.GetTableNameAsync<ClientData>();
+                var tagsTbl = await store.GetTableNameAsync<TagData>();
+                var teTbl = await store.GetTableNameAsync<TimeEntryData>();
+
+                await store.QueryAsync<ProjectData> (
+                    String.Concat ("UPDATE ", cltTbl, " SET WorkspaceId = ? WHERE WorkspaceId !=0")
+                    , workspace.Result.Id);
+                await store.QueryAsync<ProjectData> (
+                    String.Concat ("UPDATE ", prjTbl, " SET WorkspaceId = ? WHERE WorkspaceId !=0")
+                    , workspace.Result.Id);
+                await store.QueryAsync<TimeEntryData> (
+                    String.Concat ("UPDATE ", tagsTbl, " SET WorkspaceId = ? WHERE WorkspaceId !=0")
+                    , workspace.Result.Id);
+                await store.QueryAsync<TimeEntryData> (
+                    String.Concat ("UPDATE ", teTbl, " SET WorkspaceId = ? WHERE WorkspaceId !=0")
+                    , workspace.Result.Id);
+
+                var usrTbl = await store.GetTableNameAsync<UserData>();
+                var wsTbl = await store.GetTableNameAsync<WorkspaceData>();
+                await store.QueryAsync<WorkspaceData> (String.Concat ("DELETE FROM ", wsTbl ," WHERE Name='Workspace'"), workspace.Result.Id );
+                await store.QueryAsync<WorkspaceData> (String.Concat ("DELETE FROM ", usrTbl ," WHERE Name='offlineUser'"), workspace.Result.Id );
+                ServiceContainer.Resolve<AuthManager> ().ReloadUser ();
+
+            } catch (Exception e) {
+                if (e.IsNetworkFailure () || e is TaskCanceledException) {
+                    if (e.IsNetworkFailure ()) {
+                        ServiceContainer.Resolve<INetworkPresence> ().RegisterSyncWhenNetworkPresent ();
+                    }
+                } else {
+                }
+
+                hasErrors = true;
+                ex = e;
+            } finally {
+                syncDuration.Stop ();
+                log.Info (Tag, "Sync finished in {0}ms{1}.", syncDuration.ElapsedMilliseconds, hasErrors ? " (with errors)" : String.Empty);
+                bus.Send (new SyncFinishedMessage (this, SyncMode.Full, hasErrors, ex));
+            }
         }
 
         private static async Task CollectGarbage ()
