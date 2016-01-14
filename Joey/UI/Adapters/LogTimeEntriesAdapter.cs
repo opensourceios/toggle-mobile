@@ -13,6 +13,7 @@ using Toggl.Phoebe.Data;
 using Toggl.Phoebe.Data.Models;
 using Toggl.Phoebe.Data.Utils;
 using Toggl.Phoebe.Data.ViewModels;
+using Toggl.Phoebe.Net;
 using XPlatUtils;
 
 namespace Toggl.Joey.UI.Adapters
@@ -496,7 +497,9 @@ namespace Toggl.Joey.UI.Adapters
                 progressBar.Visibility = ViewStates.Gone;
                 retryLayout.Visibility = ViewStates.Gone;
 
-                if (state == RecyclerLoadState.Loading) {
+                if (authManager.OfflineMode) {
+                    loadState = RecyclerLoadState.Finished;
+                }else if (state == RecyclerLoadState.Loading) {
                     progressBar.Visibility = ViewStates.Visible;
                 } else if (state == RecyclerLoadState.Retry) {
                     retryLayout.Visibility = ViewStates.Visible;

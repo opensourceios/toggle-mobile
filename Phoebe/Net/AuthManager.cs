@@ -273,6 +273,8 @@ namespace Toggl.Phoebe.Net
             });
 
             if (userJson != null) {
+                var dataStore = ServiceContainer.Resolve<IDataStore> ();
+                User = await dataStore.ExecuteInTransactionAsync (ctx => userJson.Import (ctx));
                 // For sync querys
                 credStore.UserId = userData.Id;
                 credStore.ApiToken = userJson.ApiToken;

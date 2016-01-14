@@ -52,7 +52,7 @@ namespace Toggl.Phoebe.Net
         public async void Run (SyncMode mode = SyncMode.Full)
         {
             var authManager = ServiceContainer.Resolve<AuthManager> ();
-            if (!authManager.IsAuthenticated) {
+            if (!authManager.IsAuthenticated || authManager.OfflineMode) {
                 return;
             }
             if (IsRunning) {
@@ -82,9 +82,7 @@ namespace Toggl.Phoebe.Net
 
             try {
                 // Make sure that the RunInBackground is actually started on a background thread
-                if (!authManager.OfflineMode) {
-                    LastRun = await await Task.Factory.StartNew (() => RunInBackground (mode, LastRun));
-                }
+                LastRun = await await Task.Factory.StartNew (() => RunInBackground (mode, LastRun));
             } finally {
                 IsRunning = false;
                 subscriptionDataChange = bus.Subscribe<DataChangeMessage> (OnDataChange);
@@ -120,7 +118,6 @@ namespace Toggl.Phoebe.Net
             try {
                 // Make sure that the RunInBackground is actually started on a background thread
                 await await Task.Factory.StartNew (() => MergeNoUserData ());
-                LastRun = await await Task.Factory.StartNew (() => RunInBackground (SyncMode.Full, LastRun));
             } finally {
                 IsRunning = false;
                 subscriptionDataChange = bus.Subscribe<DataChangeMessage> (OnDataChange);
@@ -202,34 +199,40 @@ namespace Toggl.Phoebe.Net
 
                 var serverData = await client.GetChanges (null).ConfigureAwait (false);
 
-                await store.ExecuteInTransactionAsync (ctx => serverData.User.Import (ctx));
+                var user = await store.ExecuteInTransactionAsync (ctx => serverData.User.Import (ctx));
 
                 var workspace = store.ExecuteInTransactionAsync (ctx => serverData.Workspaces.ElementAt (0).Import (ctx));
 
+
+                //Lift data from the local objects to server objects
                 var prjTbl = await store.GetTableNameAsync<ProjectData>();
                 var cltTbl = await store.GetTableNameAsync<ClientData>();
                 var tagsTbl = await store.GetTableNameAsync<TagData>();
                 var teTbl = await store.GetTableNameAsync<TimeEntryData>();
+                var pudTbl = await store.GetTableNameAsync<ProjectUserData>();
 
                 await store.QueryAsync<ProjectData> (
-                    String.Concat ("UPDATE ", cltTbl, " SET WorkspaceId = ? WHERE WorkspaceId !=0")
+                    String.Concat ("UPDATE ", cltTbl, " SET WorkspaceId = ?")
                     , workspace.Result.Id);
                 await store.QueryAsync<ProjectData> (
-                    String.Concat ("UPDATE ", prjTbl, " SET WorkspaceId = ? WHERE WorkspaceId !=0")
+                    String.Concat ("UPDATE ", prjTbl, " SET WorkspaceId = ?")
+                    , workspace.Result.Id);
+                await store.QueryAsync<TagData> (
+                    String.Concat ("UPDATE ", tagsTbl, " SET WorkspaceId = ?")
                     , workspace.Result.Id);
                 await store.QueryAsync<TimeEntryData> (
-                    String.Concat ("UPDATE ", tagsTbl, " SET WorkspaceId = ? WHERE WorkspaceId !=0")
-                    , workspace.Result.Id);
-                await store.QueryAsync<TimeEntryData> (
-                    String.Concat ("UPDATE ", teTbl, " SET WorkspaceId = ? WHERE WorkspaceId !=0")
-                    , workspace.Result.Id);
+                    String.Concat ("UPDATE ", teTbl, " SET WorkspaceId = ?, UserId = ?")
+                    , workspace.Result.Id, user.Id);
+                await store.QueryAsync<ProjectUserData> (
+                    String.Concat ("UPDATE ", pudTbl, " SET UserId = ?")
+                    ,user.Id);
 
+
+                // Delete old data.
                 var usrTbl = await store.GetTableNameAsync<UserData>();
                 var wsTbl = await store.GetTableNameAsync<WorkspaceData>();
                 await store.QueryAsync<WorkspaceData> (String.Concat ("DELETE FROM ", wsTbl ," WHERE Name='Workspace'"), workspace.Result.Id );
                 await store.QueryAsync<WorkspaceData> (String.Concat ("DELETE FROM ", usrTbl ," WHERE Name='offlineUser'"), workspace.Result.Id );
-                ServiceContainer.Resolve<AuthManager> ().ReloadUser ();
-
             } catch (Exception e) {
                 if (e.IsNetworkFailure () || e is TaskCanceledException) {
                     if (e.IsNetworkFailure ()) {
@@ -576,7 +579,10 @@ namespace Toggl.Phoebe.Net
 
         public void RunTimeEntriesUpdate (DateTime startFrom, int daysLoad)
         {
-            Task.Run (async () => await RunTimeEntriesUpdateAsync (startFrom, daysLoad));
+            var authManager = ServiceContainer.Resolve<AuthManager> ();
+            if (!authManager.OfflineMode) {
+                Task.Run (async () => await RunTimeEntriesUpdateAsync (startFrom, daysLoad));
+            }
         }
 
         private async Task RunTimeEntriesUpdateAsync (DateTime startFrom, int daysLoad)

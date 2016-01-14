@@ -32,6 +32,9 @@ namespace Toggl.Phoebe
         public static bool InExperimentGroups (int experimentNumber)
         {
             var userData = ServiceContainer.Resolve<AuthManager>().User;
+            if (userData == null) {
+                return false;
+            }
             return userData.ExperimentNumber == experimentNumber;
         }
 
