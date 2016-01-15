@@ -276,7 +276,7 @@ namespace Toggl.Phoebe.Net
                 var dataStore = ServiceContainer.Resolve<IDataStore> ();
                 User = await dataStore.ExecuteInTransactionAsync (ctx => userJson.Import (ctx));
                 // For sync querys
-                credStore.UserId = userData.Id;
+                credStore.UserId = User.Id;
                 credStore.ApiToken = userJson.ApiToken;
                 credStore.OfflineMode = false;
 
@@ -320,22 +320,9 @@ namespace Toggl.Phoebe.Net
 
         public bool IsAuthenticating { get; private set; }
 
-        private bool offlineMode;
-        public static readonly string PropertyOfflineMode = GetPropertyName ((m) => m.OfflineMode);
+        public bool IsAuthenticated  { get; private set; }
 
-        public bool OfflineMode
-        {
-            get { return offlineMode; }
-            private set {
-                if (offlineMode == value) {
-                    return;
-                }
-
-                ChangePropertyAndNotify (PropertyOfflineMode, delegate {
-                    offlineMode = value;
-                });
-            }
-        }
+        public bool OfflineMode { get; private set; }
 
         public UserData User { get; private set; }
 
