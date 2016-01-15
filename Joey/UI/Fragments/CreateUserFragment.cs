@@ -77,14 +77,12 @@ namespace Toggl.Joey.UI.Fragments
                 log.Info (LogTag, ex, "Failed to signup user with password.");
                 return;
             } finally {
+                ServiceContainer.Resolve<ISyncManager> ().UploadUserData ();
                 IsAuthenticating = false;
+
             }
 
-            if (user == null) {
-                EmailEditText.RequestFocus ();
-            } else {
-                ServiceContainer.Resolve<ISyncManager> ().UploadUserData ();
-            }
+
         }
     }
 }
