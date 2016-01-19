@@ -201,6 +201,8 @@
     <BundleResource Include="GoogleService-Info.plist" />
     <BundleResource Include="Resources\arrowUp%402x.png" />
     <BundleResource Include="Resources\arrowUp.png" />
+    <BundleResource Include="Resources\icon-error.png" />
+    <BundleResource Include="Resources\icon-error%402x.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />

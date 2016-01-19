@@ -256,6 +256,7 @@ namespace Toggl.Ross.ViewControllers
             private readonly UIImageView billableTagsImageView;
             private readonly UILabel durationLabel;
             private readonly UIImageView runningImageView;
+            private readonly UIImageView errorImageView;
             private TimeEntryTagsView tagsView;
             private nint rebindCounter;
 
@@ -270,6 +271,7 @@ namespace Toggl.Ross.ViewControllers
                 billableTagsImageView = new UIImageView ();
                 durationLabel = new UILabel ().Apply (Style.Log.CellDurationLabel);
                 runningImageView = new UIImageView ().Apply (Style.Log.CellRunningIndicator);
+                errorImageView = new UIImageView ().Apply (Style.Log.CellErrorIndicator);
 
                 textContentView.AddSubviews (
                     projectLabel, clientLabel,
@@ -298,7 +300,8 @@ namespace Toggl.Ross.ViewControllers
                     textContentView,
                     billableTagsImageView,
                     durationLabel,
-                    runningImageView
+                    runningImageView,
+                    errorImageView
                 );
             }
 
@@ -377,6 +380,15 @@ namespace Toggl.Ross.ViewControllers
                     height: billableTagsHeight,
                     x: durationLabel.Frame.X - billableTagsWidth,
                     width: billableTagsWidth
+                );
+
+                var errorHeight = errorImageView.Image.Size.Height;
+                var errorWidth = errorImageView.Image.Size.Width;
+                errorImageView.Frame = new CGRect (
+                    y: (contentFrame.Height - errorHeight) / 2,
+                    height: errorHeight,
+                    x: durationLabel.Frame.X - billableTagsWidth - errorWidth,
+                    width: errorWidth
                 );
 
                 var runningHeight = runningImageView.Image.Size.Height;
@@ -494,6 +506,12 @@ namespace Toggl.Ross.ViewControllers
                     if (model.Project.Client != null) {
                         clientName = model.Project.Client.Name;
                     }
+                }
+
+                if (DataSource.Data.RemoteId.HasValue && !DataSource.Data.IsDirty) {
+                    errorImageView.Hidden = true;
+                } else {
+                    errorImageView.Hidden = false;
                 }
 
                 projectLabel.TextColor = projectColor;

@@ -107,6 +107,11 @@ namespace Toggl.Ross.Theme
             get { return UIImage.FromBundle ("icon-running"); }
         }
 
+        public static UIImage IconError
+        {
+            get { return UIImage.FromBundle ("icon-error"); }
+        }
+
         public static UIImage IconTag
         {
             get { return UIImage.FromBundle ("icon-tag"); }

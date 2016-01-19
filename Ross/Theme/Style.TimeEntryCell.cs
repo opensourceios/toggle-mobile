@@ -59,6 +59,12 @@ namespace Toggl.Ross.Theme
                 v.Image = Image.IconRunning;
             }
 
+            public static void ErrorIndicator (UIImageView v)
+            {
+                v.ContentMode = UIViewContentMode.Center;
+                v.Image = Image.IconError;
+            }
+
             public static void ContinueState (UIView v)
             {
                 v.BackgroundColor = Color.Green;
