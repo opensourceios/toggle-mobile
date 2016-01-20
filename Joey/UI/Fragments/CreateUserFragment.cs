@@ -5,15 +5,16 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using Toggl.Joey.UI.Activities;
 using Toggl.Joey.UI.Utils;
 using Toggl.Joey.UI.Views;
 using Toggl.Phoebe.Analytics;
+using Toggl.Phoebe.Data.Json;
 using Toggl.Phoebe.Logging;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
 using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
-using Toggl.Phoebe.Data.Json;
 
 namespace Toggl.Joey.UI.Fragments
 {
@@ -80,9 +81,11 @@ namespace Toggl.Joey.UI.Fragments
                 ServiceContainer.Resolve<ISyncManager> ().UploadUserData ();
                 IsAuthenticating = false;
 
+                var intent = new Intent (Activity, typeof (MainDrawerActivity));
+                intent.AddFlags (ActivityFlags.ClearTop);
+                StartActivity (intent);
+                Activity.Finish ();
             }
-
-
         }
     }
 }
