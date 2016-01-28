@@ -5,80 +5,131 @@
     android:layout_height="match_parent"
     android:gravity="center_vertical">
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:paddingTop="13dp"
-        android:gravity="center_vertical">
-        <FrameLayout
-            android:id="@+id/PreviousFrameLayout"
-            android:scaleType="fitStart"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            style="?android:attr/borderlessButtonStyle">
-            <ImageView
-                android:src="@drawable/IcKeyLeft"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"
-                android:layout_gravity="left|center" />
-        </FrameLayout>
-        <TextView
-            android:id="@+id/TimePeriodLabel"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:gravity="center"
-            android:layout_weight="2"
-            android:layout_alignParentTop="true"
-            android:textAlignment="center" />
-        <FrameLayout
-            android:id="@+id/NextFrameLayout"
-            android:scaleType="fitStart"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            style="?android:attr/borderlessButtonStyle">
-            <ImageView
-                android:src="@drawable/IcKeyRight"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"
-                android:layout_gravity="right|center" />
-        </FrameLayout>
-    </LinearLayout>
-    <FrameLayout
+        android:id="@+id/NoUserDisclaimer"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
-        <android.support.v4.view.ViewPager
-            android:id="@+id/ReportsViewPager"
+        android:background="@drawable/img_reports"
+        android:gravity="bottom"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="40dp">
+        <TextView
+            android:text="Boost your productivity!"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-        <FrameLayout
-            android:id="@+id/ReportsSyncBar"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:textSize="32sp"
+            android:textColor="@android:color/white" />
+        <TextView
+            android:text="You do not have access to reports yet. Sign up to get the most out of Toggl!"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="50dp"
+            android:textSize="16sp"
+            android:textColor="@android:color/white" />
+        <Button
+            android:id="@+id/button1"
+            android:text="Sign up for free"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="35dp"
+            style="@style/Intro.Button"
+            android:textAllCaps="true"
+            android:drawableRight="@drawable/ic_arrow"
+            android:drawablePadding="10dp"
+            android:background="@color/material_green"
+            android:layout_gravity="center"
+            android:paddingRight="30dp"
+            android:paddingLeft="30dp" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/ReportsContainer"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:gravity="center_vertical">
+        <LinearLayout
             android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="48dp"
-            android:layout_gravity="bottom"
-            android:background="@color/drawer_sync_status_box"
-            android:visibility="gone">
-            <TextView
-                android:text="@string/ReportsSyncFailed"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:paddingTop="13dp"
+            android:gravity="center_vertical">
+            <FrameLayout
+                android:id="@+id/PreviousFrameLayout"
+                android:scaleType="fitStart"
+                android:layout_weight="1"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:paddingLeft="15dp"
-                android:gravity="center_vertical"
-                android:textColor="@android:color/white" />
-            <ImageButton
-                android:id="@+id/ReportsSyncRetryButton"
-                android:src="@drawable/SyncRetryButton"
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="right"
-                android:background="@drawable/ButtonNoFrame" />
+                android:layout_height="40dp"
+                style="?android:attr/borderlessButtonStyle">
+                <ImageView
+                    android:src="@drawable/IcKeyLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:layout_gravity="left|center" />
+            </FrameLayout>
+            <TextView
+                android:id="@+id/TimePeriodLabel"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:layout_weight="2"
+                android:layout_alignParentTop="true"
+                android:textAlignment="center" />
+            <FrameLayout
+                android:id="@+id/NextFrameLayout"
+                android:scaleType="fitStart"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                style="?android:attr/borderlessButtonStyle">
+                <ImageView
+                    android:src="@drawable/IcKeyRight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:layout_gravity="right|center" />
+            </FrameLayout>
+        </LinearLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <android.support.v4.view.ViewPager
+                android:id="@+id/ReportsViewPager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+            <FrameLayout
+                android:id="@+id/ReportsSyncBar"
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="48dp"
+                android:layout_gravity="bottom"
+                android:background="@color/drawer_sync_status_box"
+                android:visibility="gone">
+                <TextView
+                    android:text="@string/ReportsSyncFailed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="15dp"
+                    android:gravity="center_vertical"
+                    android:textColor="@android:color/white" />
+                <ImageButton
+                    android:id="@+id/ReportsSyncRetryButton"
+                    android:src="@drawable/SyncRetryButton"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="right"
+                    android:background="@drawable/ButtonNoFrame" />
+            </FrameLayout>
         </FrameLayout>
-    </FrameLayout>
+    </LinearLayout>
 </LinearLayout>

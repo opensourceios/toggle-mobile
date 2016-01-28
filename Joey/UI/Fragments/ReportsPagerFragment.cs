@@ -41,6 +41,8 @@ namespace Toggl.Joey.UI.Fragments
         private FrameLayout syncErrorBar;
         private ImageButton syncRetry;
         private Animator currentAnimation;
+        private LinearLayout reportsContainer;
+        private LinearLayout nouserDisclaimer;
 
         public ZoomLevel ZoomLevel
         {
@@ -125,6 +127,8 @@ namespace Toggl.Joey.UI.Fragments
             nextPeriod = view.FindViewById (Resource.Id.NextFrameLayout);
             syncErrorBar = view.FindViewById<FrameLayout> (Resource.Id.ReportsSyncBar);
             syncRetry = view.FindViewById<ImageButton> (Resource.Id.ReportsSyncRetryButton);
+            reportsContainer = view.FindViewById<LinearLayout> (Resource.Id.ReportsContainer);
+            nouserDisclaimer = view.FindViewById<LinearLayout> (Resource.Id.NoUserDisclaimer);
 
             previousPeriod.Click += (sender, e) => NavigatePage (-1);
             nextPeriod.Click += (sender, e) => NavigatePage (1);
@@ -136,6 +140,11 @@ namespace Toggl.Joey.UI.Fragments
             var settings = ServiceContainer.Resolve<SettingsStore> ();
             if (settings.ReportsCurrentItem.HasValue) {
                 viewPager.CurrentItem = settings.ReportsCurrentItem.Value;
+            }
+
+            if (ServiceContainer.Resolve<AuthManager> ().OfflineMode) {
+                nouserDisclaimer.Visibility = ViewStates.Visible;
+                reportsContainer.Visibility = ViewStates.Gone;
             }
 
             return view;

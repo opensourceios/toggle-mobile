@@ -691,7 +691,7 @@
     <AndroidResource Include="Resources\drawable-hdpi\bgLoginScreen.png" />
     <AndroidResource Include="Resources\drawable-mdpi\bgLoginScreen.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\bgLoginScreen.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\bgLoginScreen.png"/>
+    <AndroidResource Include="Resources\drawable-xxhdpi\bgLoginScreen.png" />
     <AndroidResource Include="Resources\drawable\ButtonRed.xml" />
     <AndroidResource Include="Resources\drawable\ButtonRedDefault.xml" />
     <AndroidResource Include="Resources\drawable\ButtonRedDisabled.xml" />
@@ -758,6 +758,14 @@
     <AndroidResource Include="Resources\layout\CreateUserFragment.axml" />
     <AndroidResource Include="Resources\layout\IntroLayout.axml" />
     <AndroidResource Include="Resources\layout\IntroScreen.axml" />
+    <AndroidResource Include="Resources\drawable-hdpi\img_reports.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\img_reports.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\img_reports.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\img_reports.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_arrow.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\ic_arrow.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_arrow.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_arrow.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>
@@ -802,6 +810,7 @@
     <AndroidAsset Include="Assets\fonts\Roboto-Light.ttf" />
     <AndroidAsset Include="Assets\fonts\Roboto-Medium.ttf" />
     <AndroidAsset Include="Assets\fonts\Roboto-Regular.ttf" />
+    <AndroidAsset Include="Assets\fonts\DIN-Medium.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProguardConfiguration Include="Proguard.cfg" />

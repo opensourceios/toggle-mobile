@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Support.V4.App;
@@ -9,13 +11,11 @@ using Android.Views;
 using Android.Widget;
 using Toggl.Joey.UI.Utils;
 using Toggl.Joey.UI.Views;
+using Toggl.Phoebe.Logging;
+using Toggl.Phoebe.Net;
+using XPlatUtils;
 using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
-using Android.Content;
-using System.Threading.Tasks;
-using XPlatUtils;
-using Toggl.Phoebe.Net;
-using Toggl.Phoebe.Logging;
 
 namespace Toggl.Joey.UI.Activities
 {
