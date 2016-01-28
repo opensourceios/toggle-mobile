@@ -199,6 +199,7 @@
     <Compile Include="UI\Fragments\ChangeDateTimeDialogFragment.cs" />
     <Compile Include="UI\Adapters\RecyclerCollectionDataAdapter.cs" />
     <Compile Include="UI\Fragments\CreateUserFragment.cs" />
+    <Compile Include="UI\Activities\IntroActivity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -687,10 +688,10 @@
     <AndroidResource Include="Resources\drawable\DropShadowVerticalReverse.xml" />
     <AndroidResource Include="Resources\drawable-v21\play_button_background.xml" />
     <AndroidResource Include="Resources\drawable\play_button_background.xml" />
-    <AndroidResource Include="Resources\drawable-hdpi\bgLoginScreen.jpg" />
-    <AndroidResource Include="Resources\drawable-mdpi\bgLoginScreen.jpg" />
-    <AndroidResource Include="Resources\drawable-xhdpi\bgLoginScreen.jpg" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\bgLoginScreen.jpg" />
+    <AndroidResource Include="Resources\drawable-hdpi\bgLoginScreen.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\bgLoginScreen.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\bgLoginScreen.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\bgLoginScreen.png"/>
     <AndroidResource Include="Resources\drawable\ButtonRed.xml" />
     <AndroidResource Include="Resources\drawable\ButtonRedDefault.xml" />
     <AndroidResource Include="Resources\drawable\ButtonRedDisabled.xml" />
@@ -755,6 +756,8 @@
     <AndroidResource Include="Resources\drawable-xhdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\layout\CreateUserFragment.axml" />
+    <AndroidResource Include="Resources\layout\IntroLayout.axml" />
+    <AndroidResource Include="Resources\layout\IntroScreen.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>

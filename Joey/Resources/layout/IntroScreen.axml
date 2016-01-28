@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="41dp"
+    android:paddingRight="41dp">
+    <TextView
+        android:id="@+id/IntroTitle"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:textAllCaps="true"
+        android:gravity="center"
+        android:textSize="38sp"
+        android:layout_marginBottom="10dp" />
+</LinearLayout>

@@ -11,7 +11,7 @@
     <string name="LoginHideButtonText">HIDE</string>
     <string name="LoginShowButtonText">SHOW</string>
     <string name="LoginButtonText">Log in</string>
-    <string name="LoginSignupButtonText">Sign up</string>
+    <string name="LoginSignupButtonText">Sign up now</string>
     <string name="LoginButtonProgressText">Logging in&#8230;</string>
     <string name="LoginButtonSignupProgressText">Signing up&#8230;</string>
     <string name="LoginGoogleButtonText">Log in with Google</string>
@@ -232,4 +232,8 @@
     <string name="EditTimeEntrySyncFailed">This time entry has failed to sync correctly</string>
     <string name="CreateUserIntroText">Create a user to get the full out of your Toggl app.</string>
     <string name="CreateUserButtonText">Create user</string>
+    <string name="IntroSlideTitle1">One click time tracking</string>
+    <string name="IntroSlideTitle2">Sexy Reports</string>
+    <string name="IntroSlideTitle3">Toggl anywhere</string>
+    <string name="IntroSlideTitle4">Ideal for teams</string>
 </resources>

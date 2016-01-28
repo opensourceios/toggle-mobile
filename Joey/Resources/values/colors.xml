@@ -32,6 +32,7 @@
     <color name="material_red">#f30c16</color>
     <color name="material_gray_transparent">#508f8f8f</color>
     <color name="material_gray">#8f8f8f</color>
+    <color name="material_dark_gray">#383939</color>
     <color name="material_black">#4e4e4e</color>
     <color name="material_tag_background">#bfbfbf</color>
     <color name="material_tag_text">#ffffff</color>

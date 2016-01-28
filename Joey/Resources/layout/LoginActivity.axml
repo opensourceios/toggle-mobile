@@ -78,6 +78,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/NoUserButton"
             android:gravity="center"
+            android:visibility="gone"
             android:layout_gravity="center_horizontal" />
         <TextView
             android:id="@+id/LegalTextView"
@@ -105,6 +106,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Login.SwitchButton"
+            android:textAllCaps="true"
             android:text="@string/SignupViewButtonText"
             android:textStyle="bold" />
     </LinearLayout>

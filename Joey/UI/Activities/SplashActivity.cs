@@ -16,7 +16,7 @@ namespace Toggl.Joey.UI.Activities
         protected override void OnCreate (Bundle savedInstanceState)
         {
             base.OnCreate (savedInstanceState);
-            StartActivity (typeof (MainDrawerActivity));
+            StartActivity (typeof (IntroActivity));
         }
     }
 }

@@ -21,11 +21,17 @@
         <item name="selectableItemBackgroundBorderless">@drawable/play_button_background</item>
         <item name="android:selectableItemBackgroundBorderless">@drawable/play_button_background</item>
     </style>
-    <style name="Theme.Toggl.Login" parent="Theme.Toggl.App">
+    <style name="Theme.Toggl.Intro" parent="Theme.Toggl.App">
         <item name="android:windowBackground">@drawable/loginbackground</item>
         <item name="colorControlNormal">#ffffff</item>
         <item name="colorControlActivated">#bff30c16</item>
         <item name="colorControlHighlight">#bff30c16</item>
+    </style>
+    <style name="Theme.Toggl.Login" parent="Theme.Toggl.App">
+        <item name="android:windowBackground">@drawable/loginbackground</item>
+        <item name="colorControlNormal">#ffffff</item>
+        <item name="colorControlActivated">#ffffff</item>
+        <item name="colorControlHighlight">#ffffff</item>
     </style>
     <style name="Theme.Toggl.ListView" parent="@android:style/Widget.ListView">
         <item name="android:divider">@android:color/transparent</item>
@@ -114,6 +120,15 @@
         <item name="android:layout_marginBottom">15dp</item>
         <item name="android:layout_marginLeft">10dp</item>
         <item name="android:layout_marginRight">10dp</item>
+    </style>
+    <style name="Intro">
+    </style>
+
+    <style name="Intro.Button" parent="@android:style/TextAppearance">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#f5f5f5</item>
+        <item name="android:background">@null</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
     </style>
 
     <style name="TimeEntryListItem">

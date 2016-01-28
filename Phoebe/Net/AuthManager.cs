@@ -299,10 +299,12 @@ namespace Toggl.Phoebe.Net
             var credStore = ServiceContainer.Resolve<ISettingsStore> ();
             credStore.UserId = null;
             credStore.ApiToken = null;
+            credStore.OfflineMode = false;
 
             IsAuthenticated = false;
             Token = null;
             User = null;
+            OfflineMode = false;
 
             ServiceContainer.Resolve<MessageBus> ().Send (
                 new AuthChangedMessage (this, AuthChangeReason.Logout));
