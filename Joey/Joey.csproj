@@ -766,6 +766,10 @@
     <AndroidResource Include="Resources\drawable-mdpi\ic_arrow.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_arrow.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_arrow.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_feedback.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\ic_feedback.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_feedback.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_feedback.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>

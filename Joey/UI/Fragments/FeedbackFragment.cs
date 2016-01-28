@@ -21,6 +21,8 @@ namespace Toggl.Joey.UI.Fragments
         private ImageButton feedbackNegativeButton;
         private Button submitFeedbackButton;
         private EditText feedbackMessageEditText;
+        private LinearLayout feedbackContainer;
+        private LinearLayout disclaimerContainer;
         private int userRating;
         private String userMessage;
         private bool isSendingFeedback;
@@ -45,6 +47,16 @@ namespace Toggl.Joey.UI.Fragments
 
             submitFeedbackButton = view.FindViewById<Button> (Resource.Id.SendFeedbackButton).SetFont (Font.Roboto);
             submitFeedbackButton.Click += OnSendClick;
+
+            feedbackContainer = view.FindViewById<LinearLayout> (Resource.Id.FeedbackContainer);
+            disclaimerContainer = view.FindViewById<LinearLayout> (Resource.Id.FeedbackDisclaimer);
+
+
+
+            if (ServiceContainer.Resolve<AuthManager> ().OfflineMode) {
+                disclaimerContainer.Visibility = ViewStates.Visible;
+                feedbackContainer.Visibility = ViewStates.Gone;
+            }
 
             SetRating (userRating);
 

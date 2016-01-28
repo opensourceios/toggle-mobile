@@ -14,7 +14,7 @@
         android:layout_gravity="center_horizontal"
         android:paddingBottom="40dp">
         <TextView
-            android:text="Boost your productivity!"
+            android:text="@string/ReportsDisclaimerTitle"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -22,19 +22,17 @@
             android:textSize="32sp"
             android:textColor="@android:color/white" />
         <TextView
-            android:text="You do not have access to reports yet. Sign up to get the most out of Toggl!"
+            android:text="@string/ReportsDisclaimerText"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:layout_marginLeft="50dp"
             android:layout_marginTop="10dp"
-            android:layout_marginRight="50dp"
             android:textSize="16sp"
             android:textColor="@android:color/white" />
         <Button
             android:id="@+id/button1"
-            android:text="Sign up for free"
+            android:text="@string/NoUserSignupText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="35dp"

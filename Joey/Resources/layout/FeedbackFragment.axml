@@ -6,86 +6,138 @@
     android:fillViewport="true">
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:padding="15dp">
-        <TextView
-            android:id="@+id/DescriptionTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/FeedbackSmallHeaderTextView"
-            android:textColor="@color/light_gray"
-            android:textSize="15dp"
-            android:maxLines="4"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="20dp"
-            android:gravity="center" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
         <LinearLayout
-            android:orientation="horizontal"
+            android:id="@+id/FeedbackDisclaimer"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="35dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
-            android:gravity="center_vertical"
-            android:id="@+id/linearLayout1">
-            <ImageButton
-                android:src="@drawable/IcFeedbackPositive"
-                style="@style/FeedbackView.Button"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:layout_gravity="left"
-                android:gravity="center_vertical"
-                android:background="@drawable/FeedbackRatingButton"
-                android:id="@+id/FeedbackPositiveButton" />
-            <View
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:background="@color/button_divider" />
-            <ImageButton
-                android:src="@drawable/IcFeedbackNeutral"
-                style="@style/FeedbackView.Button"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:background="#D94E4E4E"
+            android:padding="15dp"
+            android:visibility="gone"
+            android:gravity="center">
+            <ImageView
+                android:src="@drawable/ic_feedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:text="@string/FeedbackDisclaimerTitle"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:textSize="32sp"
+                android:textColor="@android:color/white" />
+            <TextView
+                android:text="@string/FeedbackDisclaimerText"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:textSize="16sp"
+                android:textColor="@android:color/white" />
+            <Button
+                android:id="@+id/button1"
+                android:text="@string/NoUserSignupText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="35dp"
+                style="@style/Intro.Button"
+                android:textAllCaps="true"
+                android:drawableRight="@drawable/ic_arrow"
+                android:drawablePadding="10dp"
+                android:background="@color/material_green"
                 android:layout_gravity="center"
-                android:gravity="center_vertical"
-                android:background="@drawable/FeedbackRatingButton"
-                android:id="@+id/FeedbackNeutralButton" />
-            <View
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:background="@color/button_divider" />
-            <ImageButton
-                android:src="@drawable/IcFeedbackNegative"
-                style="@style/FeedbackView.Button"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:layout_gravity="right"
-                android:gravity="center_vertical"
-                android:background="@drawable/FeedbackRatingButton"
-                android:id="@+id/FeedbackNegativeButton" />
+                android:paddingRight="30dp"
+                android:paddingLeft="30dp" />
         </LinearLayout>
-        <EditText
-            android:id="@+id/FeedbackMessageText"
+        <LinearLayout
+            android:id="@+id/FeedbackContainer"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:editable="true"
-            android:cursorVisible="true"
-            android:focusableInTouchMode="true"
-            android:hint="@string/FeedbackMessageHint"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="30dp" />
-        <Button
-            android:id="@+id/SendFeedbackButton"
-            style="@style/Button.FeedbackSubmitButton"
-            android:text="@string/SendFeedbackButtonText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="15dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginLeft="8dp" />
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:padding="15dp">
+            <TextView
+                android:id="@+id/DescriptionTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/FeedbackSmallHeaderTextView"
+                android:textColor="@color/light_gray"
+                android:textSize="15dp"
+                android:maxLines="4"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="20dp"
+                android:gravity="center" />
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:gravity="center_vertical"
+                android:id="@+id/linearLayout1">
+                <ImageButton
+                    android:src="@drawable/IcFeedbackPositive"
+                    style="@style/FeedbackView.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_gravity="left"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/FeedbackRatingButton"
+                    android:id="@+id/FeedbackPositiveButton" />
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/button_divider" />
+                <ImageButton
+                    android:src="@drawable/IcFeedbackNeutral"
+                    style="@style/FeedbackView.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/FeedbackRatingButton"
+                    android:id="@+id/FeedbackNeutralButton" />
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/button_divider" />
+                <ImageButton
+                    android:src="@drawable/IcFeedbackNegative"
+                    style="@style/FeedbackView.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_gravity="right"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/FeedbackRatingButton"
+                    android:id="@+id/FeedbackNegativeButton" />
+            </LinearLayout>
+            <EditText
+                android:id="@+id/FeedbackMessageText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:editable="true"
+                android:cursorVisible="true"
+                android:focusableInTouchMode="true"
+                android:hint="@string/FeedbackMessageHint"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="30dp" />
+            <Button
+                android:id="@+id/SendFeedbackButton"
+                style="@style/Button.FeedbackSubmitButton"
+                android:text="@string/SendFeedbackButtonText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginLeft="8dp" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

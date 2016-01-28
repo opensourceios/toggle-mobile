@@ -236,4 +236,10 @@
     <string name="IntroSlideTitle2">Sexy Reports</string>
     <string name="IntroSlideTitle3">Toggl anywhere</string>
     <string name="IntroSlideTitle4">Ideal for teams</string>
+    <string name="ReportsDisclaimerTitle">Boost your productivity!</string>
+    <string name="ReportsDisclaimerText">You do not have access to reports yet.\nSign up to get the most out of Toggl!</string>
+    <string name="FeedbackDisclaimerTitle">Oh no!</string>
+    <string name="FeedbackDisclaimerText">You do not have access to feedback.\nSign up and let us know how you\'re feeling!</string>
+    <string name="NoUserSignupText">Sign up for free</string>
+    <string name="IntroStartTracking">Start tracking</string>
 </resources>

@@ -27,18 +27,20 @@
         android:id="@+id/ButtonBar">
         <Button
             android:id="@+id/LoginButton"
-            android:text="LOG IN"
+            android:text="@string/LoginButtonText"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
+            android:textAllCaps="true"
             android:background="@color/material_black"
             style="@style/Intro.Button"
             android:layout_weight="1" />
         <Button
             android:id="@+id/StartNowButton"
-            android:text="START TRACKING"
+            android:text="@string/IntroStartTracking"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             style="@style/Intro.Button"
+            android:textAllCaps="true"
             android:background="@color/material_red"
             android:layout_weight="1" />
     </LinearLayout>
