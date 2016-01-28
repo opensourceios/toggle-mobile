@@ -40,6 +40,7 @@ namespace Toggl.Joey.UI.Utils
         public static readonly Font Roboto = new Font ("fonts/Roboto-Regular.ttf", TypefaceStyle.Normal);
         public static readonly Font RobotoLight = new Font ("fonts/Roboto-Light.ttf", TypefaceStyle.Normal);
         public static readonly Font RobotoMedium = new Font ("fonts/Roboto-Medium.ttf", TypefaceStyle.Normal);
+        public static readonly Font DINMedium = new Font ("fonts/DIN-Medium.ttf", TypefaceStyle.Normal);
     }
 }
 

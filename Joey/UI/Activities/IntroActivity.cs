@@ -40,8 +40,8 @@ namespace Toggl.Joey.UI.Activities
 
             SetContentView (Resource.Layout.IntroLayout);
             IntroPager = FindViewById<ViewPager> (Resource.Id.IntroPager);
-            LoginButton = FindViewById<Button> (Resource.Id.LoginButton);
-            StartNowButton = FindViewById<Button> (Resource.Id.StartNowButton);
+            LoginButton = FindViewById<Button> (Resource.Id.LoginButton).SetFont (Font.DINMedium);;
+            StartNowButton = FindViewById<Button> (Resource.Id.StartNowButton).SetFont (Font.DINMedium);
             LoginButton.Click += LoginButtonClick;
             StartNowButton.Click += StartNowButtonClick;
 
@@ -85,7 +85,6 @@ namespace Toggl.Joey.UI.Activities
         protected override bool StartAuthActivity ()
         {
             var authManager = ServiceContainer.Resolve<AuthManager> ();
-            Console.WriteLine ("authManager.IsAuth: {0}", authManager.IsAuthenticated);
             if (authManager.IsAuthenticated) {
                 // Try to avoid flickering of buttons during activity transition by
                 // faking that we're still authenticating
@@ -165,7 +164,7 @@ namespace Toggl.Joey.UI.Activities
             public override View OnCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
             {
                 var view = inflater.Inflate (Resource.Layout.IntroScreen, container, false);
-                TitleView = view.FindViewById<TextView> (Resource.Id.IntroTitle);
+                TitleView = view.FindViewById<TextView> (Resource.Id.IntroTitle).SetFont (Font.DINMedium);;
                 TitleView.SetText (titleResource);
                 return view;
             }
