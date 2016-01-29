@@ -4,11 +4,13 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using Toggl.Joey.UI.Activities;
+using Toggl.Joey.UI.Adapters;
+using Toggl.Joey.UI.Utils;
+using Toggl.Joey.UI.Views;
 using Toggl.Phoebe.Analytics;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
-using Toggl.Joey.UI.Utils;
-using Toggl.Joey.UI.Views;
 using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
 
@@ -23,6 +25,7 @@ namespace Toggl.Joey.UI.Fragments
         private EditText feedbackMessageEditText;
         private LinearLayout feedbackContainer;
         private LinearLayout disclaimerContainer;
+        private Button noUserRegisterButton;
         private int userRating;
         private String userMessage;
         private bool isSendingFeedback;
@@ -50,13 +53,14 @@ namespace Toggl.Joey.UI.Fragments
 
             feedbackContainer = view.FindViewById<LinearLayout> (Resource.Id.FeedbackContainer);
             disclaimerContainer = view.FindViewById<LinearLayout> (Resource.Id.FeedbackDisclaimer);
-
-
+            noUserRegisterButton = view.FindViewById<Button> (Resource.Id.FeedbackRegisterButton);
 
             if (ServiceContainer.Resolve<AuthManager> ().OfflineMode) {
                 disclaimerContainer.Visibility = ViewStates.Visible;
                 feedbackContainer.Visibility = ViewStates.Gone;
             }
+
+            noUserRegisterButton.Click += (sender, e) => ((MainDrawerActivity)Activity).OpenPage (DrawerListAdapter.RegisterUserPageId);
 
             SetRating (userRating);
 

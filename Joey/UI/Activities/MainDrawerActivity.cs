@@ -43,7 +43,7 @@ namespace Toggl.Joey.UI.Activities
         private readonly Lazy<SettingsListFragment> settingsFragment = new Lazy<SettingsListFragment> ();
         private readonly Lazy<ReportsPagerFragment> reportFragment = new Lazy<ReportsPagerFragment> ();
         private readonly Lazy<FeedbackFragment> feedbackFragment = new Lazy<FeedbackFragment> ();
-        private readonly Lazy<CreateUserFragment> createUserFragment = new Lazy<CreateUserFragment> ();
+        private readonly Lazy<RegisterUserFragment> createUserFragment = new Lazy<RegisterUserFragment> ();
         private readonly List<int> pageStack = new List<int> ();
         private readonly Handler handler = new Handler ();
         private DrawerListAdapter drawerAdapter;
@@ -198,7 +198,7 @@ namespace Toggl.Joey.UI.Activities
             }
         }
 
-        private void OpenPage (int id)
+        public void OpenPage (int id)
         {
             if (id == DrawerListAdapter.SettingsPageId) {
                 OpenFragment (settingsFragment.Value);
@@ -235,9 +235,9 @@ namespace Toggl.Joey.UI.Activities
                 SupportActionBar.SetTitle (Resource.String.MainDrawerFeedback);
                 drawerAdapter.ExpandCollapse (DrawerListAdapter.FeedbackPageId);
                 OpenFragment (feedbackFragment.Value);
-            } else if (id == DrawerListAdapter.CreateUserPageId) {
+            } else if (id == DrawerListAdapter.RegisterUserPageId) {
                 SupportActionBar.SetTitle (Resource.String.MainDrawerSignup);
-                drawerAdapter.ExpandCollapse (DrawerListAdapter.CreateUserPageId);
+                drawerAdapter.ExpandCollapse (DrawerListAdapter.RegisterUserPageId);
                 OpenFragment (createUserFragment.Value);
             } else {
                 SupportActionBar.SetTitle (Resource.String.MainDrawerTimer);
@@ -305,8 +305,8 @@ namespace Toggl.Joey.UI.Activities
                 OpenPage (DrawerListAdapter.SettingsPageId);
             } else if (e.Id == DrawerListAdapter.FeedbackPageId) {
                 OpenPage (DrawerListAdapter.FeedbackPageId);
-            } else if (e.Id == DrawerListAdapter.CreateUserPageId) {
-                OpenPage (DrawerListAdapter.CreateUserPageId);
+            } else if (e.Id == DrawerListAdapter.RegisterUserPageId) {
+                OpenPage (DrawerListAdapter.RegisterUserPageId);
             }
 
 

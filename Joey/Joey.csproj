@@ -198,8 +198,8 @@
     <Compile Include="Wear\WearDataProvider.cs" />
     <Compile Include="UI\Fragments\ChangeDateTimeDialogFragment.cs" />
     <Compile Include="UI\Adapters\RecyclerCollectionDataAdapter.cs" />
-    <Compile Include="UI\Fragments\CreateUserFragment.cs" />
     <Compile Include="UI\Activities\IntroActivity.cs" />
+    <Compile Include="UI\Fragments\RegisterUserFragment.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

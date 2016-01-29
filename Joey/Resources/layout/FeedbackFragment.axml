@@ -39,7 +39,7 @@
                 android:textSize="16sp"
                 android:textColor="@android:color/white" />
             <Button
-                android:id="@+id/button1"
+                android:id="@+id/FeedbackRegisterButton"
                 android:text="@string/NoUserSignupText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

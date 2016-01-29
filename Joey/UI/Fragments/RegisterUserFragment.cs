@@ -18,9 +18,9 @@ using FragmentManager = Android.Support.V4.App.FragmentManager;
 
 namespace Toggl.Joey.UI.Fragments
 {
-    public class CreateUserFragment : Fragment
+    public class RegisterUserFragment : Fragment
     {
-        private const string LogTag = "CreateUserFragment";
+        private const string LogTag = "RegisterUserFragment";
 
         private EditText EmailEditText;
         private EditText PasswordEditText;
