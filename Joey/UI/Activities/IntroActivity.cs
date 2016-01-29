@@ -53,10 +53,7 @@ namespace Toggl.Joey.UI.Activities
 
         private void LoginButtonClick (object sender, EventArgs e)
         {
-            var intent = new Intent (this, typeof (LoginActivity));
-            intent.AddFlags (ActivityFlags.ClearTop);
-            StartActivity (intent);
-            Finish ();
+            StartActivity (new Intent (this, typeof (LoginActivity)));
         }
 
         private async void StartNowButtonClick (object sender, EventArgs e)
