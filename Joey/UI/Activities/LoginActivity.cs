@@ -58,8 +58,6 @@ namespace Toggl.Joey.UI.Activities
 
         protected Button LoginButton { get; private set; }
 
-        protected Button NoUserButton { get; private set; }
-
         protected TextView LegalTextView { get; private set; }
 
         protected Button GoogleLoginButton { get; private set; }
@@ -76,7 +74,6 @@ namespace Toggl.Joey.UI.Activities
             PasswordEditText = FindViewById<EditText> (Resource.Id.PasswordEditText).SetFont (Font.RobotoLight);
             PasswordToggleButton = FindViewById<Button> (Resource.Id.PasswordToggleButton).SetFont (Font.Roboto);
             LoginButton = FindViewById<Button> (Resource.Id.LoginButton).SetFont (Font.Roboto);
-            NoUserButton = FindViewById<Button> (Resource.Id.NoUserButton).SetFont (Font.Roboto);
             LegalTextView = FindViewById<TextView> (Resource.Id.LegalTextView).SetFont (Font.RobotoLight);
             GoogleLoginButton = FindViewById<Button> (Resource.Id.GoogleLoginButton).SetFont (Font.Roboto);
             LoginToolbar = FindViewById<Toolbar> (Resource.Id.LoginActivityToolbar);
@@ -132,7 +129,6 @@ namespace Toggl.Joey.UI.Activities
             ScrollView.ViewTreeObserver.AddOnGlobalLayoutListener (this);
 
             LoginButton.Click += OnLoginButtonClick;
-            NoUserButton.Click += NoUserButtonClick;
             GoogleLoginButton.Click += OnGoogleLoginButtonClick;
             EmailEditText.Adapter = MakeEmailsAdapter ();
             EmailEditText.Threshold = 1;
@@ -365,28 +361,6 @@ namespace Toggl.Joey.UI.Activities
             StartAuthActivity ();
         }
 
-        private async void NoUserButtonClick (object sender, EventArgs e)
-        {
-            await SetUpNoUserAccountAsync ();
-        }
-
-        private async Task SetUpNoUserAccountAsync ()
-        {
-            IsAuthenticating = true;
-            var authManager = ServiceContainer.Resolve<AuthManager> ();
-            AuthResult authRes;
-            try {
-                authRes = await authManager.SetupNoUserAsync ();
-            } catch (InvalidOperationException ex) {
-                var log = ServiceContainer.Resolve<ILogger> ();
-                log.Info (LogTag, ex, "Failed to set up offline mode.");
-                return;
-            } finally {
-                IsAuthenticating = false;
-            }
-
-            StartAuthActivity ();
-        }
 
         public override bool OnOptionsItemSelected (IMenuItem item)
         {
