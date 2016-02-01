@@ -46,6 +46,7 @@ namespace Toggl.Joey.UI.Activities
         private readonly Lazy<RegisterUserFragment> createUserFragment = new Lazy<RegisterUserFragment> ();
         private readonly List<int> pageStack = new List<int> ();
         private readonly Handler handler = new Handler ();
+        private AuthManager authManager;
         private DrawerListAdapter drawerAdapter;
         private ToolbarModes toolbarMode;
 
@@ -81,7 +82,7 @@ namespace Toggl.Joey.UI.Activities
             DrawerListView.Adapter = drawerAdapter = new DrawerListAdapter ();
             DrawerListView.ItemClick += OnDrawerListViewItemClick;
 
-            var authManager = ServiceContainer.Resolve<AuthManager> ();
+            authManager = ServiceContainer.Resolve<AuthManager> ();
             authManager.PropertyChanged += OnUserChangedEvent;
 
             DrawerLayout = FindViewById<DrawerLayout> (Resource.Id.DrawerLayout);
@@ -205,7 +206,11 @@ namespace Toggl.Joey.UI.Activities
                 SupportActionBar.SetTitle (Resource.String.MainDrawerSettings);
             } else if (id == DrawerListAdapter.ReportsPageId) {
                 drawerAdapter.ExpandCollapse (DrawerListAdapter.ReportsPageId);
-                if (reportFragment.Value.ZoomLevel == ZoomLevel.Week) {
+
+                if (authManager.OfflineMode) {
+                    id = DrawerListAdapter.ReportsPageId;
+                    SupportActionBar.SetTitle (Resource.String.MainDrawerReports);
+                } else if (reportFragment.Value.ZoomLevel == ZoomLevel.Week) {
                     SupportActionBar.SetTitle (Resource.String.MainDrawerReportsWeek);
                     id = DrawerListAdapter.ReportsWeekPageId;
                 } else if (reportFragment.Value.ZoomLevel == ZoomLevel.Month) {
@@ -215,6 +220,7 @@ namespace Toggl.Joey.UI.Activities
                     SupportActionBar.SetTitle (Resource.String.MainDrawerReportsYear);
                     id = DrawerListAdapter.ReportsYearPageId;
                 }
+
                 OpenFragment (reportFragment.Value);
             } else if (id == DrawerListAdapter.ReportsWeekPageId) {
                 drawerAdapter.ExpandCollapse (DrawerListAdapter.ReportsPageId);

@@ -28,6 +28,7 @@ namespace Toggl.Joey.UI.Adapters
 
         public DrawerListAdapter ()
         {
+            authManager = ServiceContainer.Resolve<AuthManager> ();
             rowItems = new List<DrawerItem> () {
                 new DrawerItem () {
                     Id = TimerPageId,
@@ -47,6 +48,7 @@ namespace Toggl.Joey.UI.Adapters
                             TextResId = Resource.String.MainDrawerReportsWeek,
                             ImageResId = 0,
                             IsEnabled = true,
+                            Visible = !authManager.OfflineMode,
                         },
                         new DrawerItem () {
                             Id = ReportsMonthPageId,
@@ -54,6 +56,7 @@ namespace Toggl.Joey.UI.Adapters
                             TextResId = Resource.String.MainDrawerReportsMonth,
                             ImageResId = 0,
                             IsEnabled = true,
+                            Visible = !authManager.OfflineMode,
                         },
                         new DrawerItem () {
                             Id = ReportsYearPageId,
@@ -61,6 +64,7 @@ namespace Toggl.Joey.UI.Adapters
                             TextResId = Resource.String.MainDrawerReportsYear,
                             ImageResId = 0,
                             IsEnabled = true,
+                            Visible = !authManager.OfflineMode,
                         }
                     }
                 },
@@ -81,6 +85,7 @@ namespace Toggl.Joey.UI.Adapters
                     TextResId = Resource.String.MainDrawerLogout,
                     ImageResId = Resource.Drawable.IcNavLogout,
                     IsEnabled = true,
+                    Visible = !authManager.OfflineMode,
                 },
                 new DrawerItem () {
                     Id = RegisterUserPageId,
@@ -90,7 +95,7 @@ namespace Toggl.Joey.UI.Adapters
                 }
             };
             collapsedRowItems = rowItems;
-            authManager = ServiceContainer.Resolve<AuthManager> ();
+            rowItems = FilterVisible (rowItems);
         }
 
         public override int ViewTypeCount
@@ -113,6 +118,27 @@ namespace Toggl.Joey.UI.Adapters
             } else {
                 return ViewTypeDrawerItem;
             }
+        }
+
+        private List<DrawerItem> FilterVisible (List<DrawerItem> list)
+        {
+            var newList = new List<DrawerItem> ();
+            foreach (var item in list) {
+                if (!item.Visible) {
+                    continue;
+                }
+                newList.Add (item);
+                if (item.SubItems != null) {
+                    var subItems = new List<DrawerItem> ();
+                    foreach (var sub in item.SubItems) {
+                        if (sub.Visible) {
+                            subItems.Add (sub);
+                        }
+                    }
+                    item.SubItems = subItems.Count > 0 ? subItems : null;
+                }
+            }
+            return newList;
         }
 
         public override View GetView (int position, View convertView, ViewGroup parent)
@@ -172,7 +198,8 @@ namespace Toggl.Joey.UI.Adapters
 
         public void ExpandCollapse (int position)
         {
-            rowItems = collapsedRowItems;
+            rowItems = FilterVisible (collapsedRowItems);
+
             if (collapsedRowItems [position].SubItems == null) {
                 return;
             }
@@ -206,6 +233,7 @@ namespace Toggl.Joey.UI.Adapters
             public int ChildOf = 0;
             public bool IsEnabled;
             public bool Expanded = false;
+            public bool Visible = true;
             public List<DrawerItem> SubItems;
         }
 
