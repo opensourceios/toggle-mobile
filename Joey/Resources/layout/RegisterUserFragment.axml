@@ -11,6 +11,7 @@
         android:padding="15dp">
         <LinearLayout
             android:orientation="vertical"
+            android:visibility="gone"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
             <EditText
@@ -72,43 +73,98 @@
                 android:layout_gravity="center_horizontal" />
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/RegisterSuccessScreen"
             android:orientation="vertical"
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <TextView
-                android:text="Congrats!"
-                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/RegisterSuccessTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView1" />
+                android:layout_marginTop="110dp"
+                android:textSize="28sp"
+                android:gravity="center_horizontal" />
             <TextView
-                android:text="You are now signed up and ready to go."
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/RegisterSuccessHeading"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView2" />
+                android:textSize="16sp"
+                android:layout_marginTop="8dp"
+                android:gravity="center_horizontal" />
             <TextView
-                android:text="Did you know, you now have access to:"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/RegisterSuccessListHeading"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView3" />
-            <CheckedTextView
+                android:textSize="16sp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                android:gravity="center_horizontal" />
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/checkedTextView1"
-                android:text="Reports to analyze your data" />
-            <CheckedTextView
-                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:paddingLeft="80dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp">
+                    <ImageView
+                        android:src="@drawable/IcCheckGreen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/RegisterSuccessListItem1" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp">
+                    <ImageView
+                        android:src="@drawable/IcCheckGreen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/RegisterSuccessListItem2" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:src="@drawable/IcCheckGreen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/RegisterSuccessListItem3" />
+                </LinearLayout>
+            </LinearLayout>
+            <Button
+                android:id="@+id/GoToTimerButton"
+                style="@style/Button.Green"
+                android:text="@string/RegisterSuccessButton"
+                android:layout_width="210dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/checkedTextView2"
-                android:text="Teams to boost group productivity" />
-            <CheckedTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/checkedTextView3"
-                android:text="Web and desktop apps" />
+                android:textSize="18sp"
+                android:layout_gravity="center_horizontal"
+                android:drawableRight="@drawable/ic_arrow"
+                android:drawablePadding="10dp"
+                android:paddingRight="30dp"
+                android:paddingLeft="30dp"
+                android:layout_marginTop="32dp" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

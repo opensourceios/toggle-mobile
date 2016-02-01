@@ -242,4 +242,11 @@
     <string name="FeedbackDisclaimerText">You do not have access to feedback.\nSign up and let us know how you\'re feeling!</string>
     <string name="NoUserSignupText">Sign up for free</string>
     <string name="IntroStartTracking">Start tracking</string>
+    <string name="RegisterSuccessTitle">Congrats!</string>
+    <string name="RegisterSuccessHeading">You are now signed up and ready to go.</string>
+    <string name="RegisterSuccessListHeading">Did you know, you now have access to:</string>
+    <string name="RegisterSuccessListItem1">Reports to analyze your data</string>
+    <string name="RegisterSuccessListItem2">Teams to boost group productivity</string>
+    <string name="RegisterSuccessListItem3">Web and desktop apps</string>
+    <string name="RegisterSuccessButton">Go to timer</string>
 </resources>

@@ -21,20 +21,20 @@ namespace Toggl.Joey.UI.Fragments
     {
         private const string LogTag = "RegisterUserFragment";
 
+        private LinearLayout RegisterFormLayout;
         private EditText EmailEditText;
         private EditText PasswordEditText;
         private Button RegisterButton;
-        private bool isAuthenticating;
         private ImageView SpinningImage;
+        private LinearLayout RegisterSuccessLayout;
+        private Button SuccessTimerButton;
+        private bool isAuthenticating;
 
         public override View OnCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             var view = inflater.Inflate (Resource.Layout.RegisterUserFragment, container, false);
             EmailEditText = view.FindViewById<EditText> (Resource.Id.CreateUserEmailEditText).SetFont (Font.Roboto);
             PasswordEditText = view.FindViewById<EditText> (Resource.Id.CreateUserPasswordEditText).SetFont (Font.Roboto);
-
-
-
             RegisterButton = view.FindViewById<Button> (Resource.Id.CreateUserButton).SetFont (Font.Roboto);
             SpinningImage = view.FindViewById<ImageView> (Resource.Id.RegisterLoadingImageView);
             Animation spinningImageAnimation = AnimationUtils.LoadAnimation (Activity.BaseContext, Resource.Animation.SpinningAnimation);
