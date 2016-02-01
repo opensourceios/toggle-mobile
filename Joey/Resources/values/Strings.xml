@@ -146,6 +146,7 @@
     <string name="SettingsGeneralGroupedEntriesDesc">Group similar time entries as a single item.</string>
     <string name="SettingsGeneralShowNotificationTitle">Running entry notification</string>
     <string name="SettingsGeneralShowNotificationDesc">Show the running entry as a notification.</string>
+    <string name="SettingsClearNoUserData">Clear data</string>
     <string name="ForcedUpgradeDialogTitle">Update time!</string>
     <string name="ForcedUpgradeDialogMessage">It seems that you haven\'t updated your Toggl app in a while&#8230;\n\nNow is the time as this version is no longer supported.</string>
     <string name="ForcedUpgradeDialogUpdate">Open Play Store</string>

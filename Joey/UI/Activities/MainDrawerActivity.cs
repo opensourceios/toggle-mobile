@@ -260,6 +260,13 @@ namespace Toggl.Joey.UI.Activities
             }
         }
 
+        public void ForgetCurrentUser ()
+        {
+            var authManager = ServiceContainer.Resolve<AuthManager> ();
+            authManager.Forget ();
+            StartAuthActivity ();
+        }
+
         private void OpenFragment (Fragment fragment)
         {
             var old = FragmentManager.FindFragmentById (Resource.Id.ContentFrameLayout);
@@ -296,9 +303,7 @@ namespace Toggl.Joey.UI.Activities
                 OpenPage (DrawerListAdapter.TimerPageId);
 
             } else if (e.Id == DrawerListAdapter.LogoutPageId) {
-                var authManager = ServiceContainer.Resolve<AuthManager> ();
-                authManager.Forget ();
-                StartAuthActivity ();
+                ForgetCurrentUser();
             } else if (e.Id == DrawerListAdapter.ReportsPageId) {
                 OpenPage (DrawerListAdapter.ReportsPageId);
             } else if (e.Id == DrawerListAdapter.ReportsWeekPageId) {
