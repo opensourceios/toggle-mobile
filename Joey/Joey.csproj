@@ -770,6 +770,10 @@
     <AndroidResource Include="Resources\drawable-mdpi\ic_feedback.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_feedback.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_feedback.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\IcSpinner.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\IcSpinner.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\IcSpinner.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\IcSpinner.png" />
     <AndroidResource Include="Resources\layout\RegisterUserFragment.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

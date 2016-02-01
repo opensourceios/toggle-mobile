@@ -29,16 +29,30 @@
                 android:hint="@string/LoginPasswordHint"
                 style="@style/Register.Input"
                 android:layout_marginTop="15dp" />
-            <Button
-                android:id="@+id/CreateUserButton"
-                style="@style/Button.Green"
-                android:text="@string/CreateUserButtonText"
-                android:layout_width="210dp"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
                 android:layout_marginTop="27dp"
                 android:layout_marginBottom="22dp"
-                android:layout_gravity="center_horizontal" />
+                android:layout_gravity="center">
+                <Button
+                    android:id="@+id/CreateUserButton"
+                    style="@style/Button.Green"
+                    android:text="@string/CreateUserButtonText"
+                    android:layout_width="210dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_centerInParent="true" />
+                <ImageView
+                    android:src="@drawable/IcSpinner"
+                    android:id="@+id/RegisterLoadingImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:elevation="2dp"
+                    android:layout_centerInParent="true" />
+            </RelativeLayout>
             <Button
                 android:id="@+id/GoogleLoginButton"
                 android:layout_width="wrap_content"

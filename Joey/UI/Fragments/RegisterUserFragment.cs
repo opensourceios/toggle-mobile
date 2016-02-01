@@ -1,15 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Views;
+using Android.Views.Animations;
 using Android.Widget;
 using Toggl.Joey.UI.Activities;
 using Toggl.Joey.UI.Utils;
 using Toggl.Joey.UI.Views;
 using Toggl.Phoebe.Analytics;
-using Toggl.Phoebe.Data.Json;
 using Toggl.Phoebe.Logging;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
@@ -24,8 +23,9 @@ namespace Toggl.Joey.UI.Fragments
 
         private EditText EmailEditText;
         private EditText PasswordEditText;
-        private Button submitButton;
+        private Button RegisterButton;
         private bool isAuthenticating;
+        private ImageView SpinningImage;
 
         public override View OnCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -33,9 +33,14 @@ namespace Toggl.Joey.UI.Fragments
             EmailEditText = view.FindViewById<EditText> (Resource.Id.CreateUserEmailEditText).SetFont (Font.Roboto);
             PasswordEditText = view.FindViewById<EditText> (Resource.Id.CreateUserPasswordEditText).SetFont (Font.Roboto);
 
-            submitButton = view.FindViewById<Button> (Resource.Id.CreateUserButton).SetFont (Font.Roboto);
-            submitButton.Click += OnRegisterClick;
 
+
+            RegisterButton = view.FindViewById<Button> (Resource.Id.CreateUserButton).SetFont (Font.Roboto);
+            SpinningImage = view.FindViewById<ImageView> (Resource.Id.RegisterLoadingImageView);
+            Animation spinningImageAnimation = AnimationUtils.LoadAnimation (Activity.BaseContext, Resource.Animation.SpinningAnimation);
+            SpinningImage.StartAnimation (spinningImageAnimation);
+            SpinningImage.ImageAlpha = 0;
+            RegisterButton.Click += OnRegisterClick;
             return view;
         }
 
@@ -53,7 +58,11 @@ namespace Toggl.Joey.UI.Fragments
 
         private async void OnRegisterClick (object sender, EventArgs e)
         {
+            RegisterButton.Text = "";
+            SpinningImage.ImageAlpha = 255;
             await TrySignupPasswordAsync ();
+            SpinningImage.ImageAlpha = 0;
+            RegisterButton.SetText (Resource.String.CreateUserButtonText);
         }
 
         private bool IsAuthenticating

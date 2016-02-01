@@ -146,6 +146,12 @@
         <item name="android:paddingRight">60dp</item>
         <item name="android:paddingBottom">15dp</item>
     </style>
+    <style name="Register.Button" parent="@android:style/TextAppearance">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#f5f5f5</item>
+        <item name="android:background">@null</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
     <style name="Register.GoogleLogin" parent="Register.Button">
         <item name="android:textAllCaps">true</item>
         <item name="android:textColor">@color/register_input_text</item>
