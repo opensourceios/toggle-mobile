@@ -29,9 +29,9 @@ namespace Toggl.Joey.UI.Fragments
 
         public override View OnCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
-            var view = inflater.Inflate (Resource.Layout.CreateUserFragment, container, false);
-            EmailEditText = view.FindViewById<EditText> (Resource.Id.CreateUserEmailEditText);
-            PasswordEditText = view.FindViewById<EditText> (Resource.Id.CreateUserPasswordEditText);
+            var view = inflater.Inflate (Resource.Layout.RegisterUserFragment, container, false);
+            EmailEditText = view.FindViewById<EditText> (Resource.Id.CreateUserEmailEditText).SetFont (Font.Roboto);
+            PasswordEditText = view.FindViewById<EditText> (Resource.Id.CreateUserPasswordEditText).SetFont (Font.Roboto);
 
             submitButton = view.FindViewById<Button> (Resource.Id.CreateUserButton).SetFont (Font.Roboto);
             submitButton.Click += OnRegisterClick;
@@ -70,9 +70,8 @@ namespace Toggl.Joey.UI.Fragments
         {
             IsAuthenticating = true;
             var authManager = ServiceContainer.Resolve<AuthManager> ();
-            UserJson user;
             try {
-                user = await authManager.RegisterFromNouserAsync (EmailEditText.Text, PasswordEditText.Text);
+                await authManager.RegisterFromNouserAsync (EmailEditText.Text, PasswordEditText.Text);
             } catch (InvalidOperationException ex) {
                 var log = ServiceContainer.Resolve<ILogger> ();
                 log.Info (LogTag, ex, "Failed to signup user with password.");

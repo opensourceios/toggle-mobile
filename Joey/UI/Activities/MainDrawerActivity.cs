@@ -32,7 +32,7 @@ namespace Toggl.Joey.UI.Activities
          // The actual entry-point is defined in manifest via activity-alias, this here is just to
          // make adb launch the activity automatically when developing.
          #endif
-         Theme = "@style/Theme.Toggl.App")]
+         Theme = "@style/Theme.Toggl.Main")]
     public class MainDrawerActivity : BaseActivity
     {
         private const string PageStackExtra = "com.toggl.timer.page_stack";

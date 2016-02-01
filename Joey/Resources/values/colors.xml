@@ -43,4 +43,6 @@
     <color name="button_color_highlight_press">#f2f2f2</color>
     <color name="button_color_highlight_focus">#f2f2f2</color>
     <color name="task_highlight_focus">#fafafa</color>
+    <color name="register_input_text">#DE4E4E4E</color>
+    <color name="register_input_hint">#D9BCBCBC</color>
 </resources>

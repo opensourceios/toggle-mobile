@@ -231,8 +231,7 @@
     <string name="TimeEntriesListFooterError">An error occurred downloading data</string>
     <string name="TimeEntriesListFooterTryAgain">Try again</string>
     <string name="EditTimeEntrySyncFailed">This time entry has failed to sync correctly</string>
-    <string name="CreateUserIntroText">Create a user to get the full out of your Toggl app.</string>
-    <string name="CreateUserButtonText">Create user</string>
+    <string name="CreateUserButtonText">Sign up</string>
     <string name="IntroSlideTitle1">One click time tracking</string>
     <string name="IntroSlideTitle2">Sexy Reports</string>
     <string name="IntroSlideTitle3">Toggl anywhere</string>
