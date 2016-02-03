@@ -28,7 +28,7 @@ namespace Toggl.Joey.UI.Fragments
         private ImageView SpinningImage;
         private LinearLayout RegisterSuccessLayout;
         private Button SuccessTimerButton;
-        private bool isAuthenticating;
+        private bool IsAuthenticating;
 
         public override View OnCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -37,7 +37,11 @@ namespace Toggl.Joey.UI.Fragments
             PasswordEditText = view.FindViewById<EditText> (Resource.Id.CreateUserPasswordEditText).SetFont (Font.Roboto);
             RegisterButton = view.FindViewById<Button> (Resource.Id.CreateUserButton).SetFont (Font.Roboto);
             SpinningImage = view.FindViewById<ImageView> (Resource.Id.RegisterLoadingImageView);
-            Animation spinningImageAnimation = AnimationUtils.LoadAnimation (Activity.BaseContext, Resource.Animation.SpinningAnimation);
+            RegisterFormLayout = view.FindViewById<LinearLayout> (Resource.Id.RegisterForm);
+            RegisterSuccessLayout = view.FindViewById<LinearLayout> (Resource.Id.RegisterSuccessScreen);
+            SuccessTimerButton = view.FindViewById<Button> (Resource.Id.GoToTimerButton);
+            SuccessTimerButton.Click += GoToTimerButtonClick;
+            var spinningImageAnimation = AnimationUtils.LoadAnimation (Activity.BaseContext, Resource.Animation.SpinningAnimation);
             SpinningImage.StartAnimation (spinningImageAnimation);
             SpinningImage.ImageAlpha = 0;
             RegisterButton.Click += OnRegisterClick;
@@ -65,14 +69,12 @@ namespace Toggl.Joey.UI.Fragments
             RegisterButton.SetText (Resource.String.CreateUserButtonText);
         }
 
-        private bool IsAuthenticating
+        private void GoToTimerButtonClick (object sender, System.EventArgs e)
         {
-            set {
-                if (isAuthenticating == value) {
-                    return;
-                }
-                isAuthenticating = value;
-            }
+            var intent = new Intent (Activity, typeof (MainDrawerActivity));
+            intent.AddFlags (ActivityFlags.ClearTop);
+            StartActivity (intent);
+            Activity.Finish ();
         }
 
         private async Task TrySignupPasswordAsync ()
@@ -88,11 +90,8 @@ namespace Toggl.Joey.UI.Fragments
             } finally {
                 ServiceContainer.Resolve<ISyncManager> ().UploadUserData ();
                 IsAuthenticating = false;
-
-                var intent = new Intent (Activity, typeof (MainDrawerActivity));
-                intent.AddFlags (ActivityFlags.ClearTop);
-                StartActivity (intent);
-                Activity.Finish ();
+                RegisterSuccessLayout.Visibility = ViewStates.Visible;
+                RegisterFormLayout.Visibility = ViewStates.Gone;
             }
         }
     }

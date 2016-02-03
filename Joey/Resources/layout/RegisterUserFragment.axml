@@ -6,14 +6,14 @@
     android:fillViewport="true">
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:padding="15dp">
         <LinearLayout
+            android:id="@+id/RegisterForm"
             android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
             <EditText
                 android:inputType="textEmailAddress"
                 android:layout_width="match_parent"
@@ -75,6 +75,7 @@
         <LinearLayout
             android:id="@+id/RegisterSuccessScreen"
             android:orientation="vertical"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <TextView
@@ -108,8 +109,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingTop="8dp">
+                    android:gravity="center_vertical">
                     <ImageView
                         android:src="@drawable/IcCheckGreen"
                         android:layout_width="wrap_content"
@@ -140,7 +140,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp">
                     <ImageView
                         android:src="@drawable/IcCheckGreen"
                         android:layout_width="wrap_content"

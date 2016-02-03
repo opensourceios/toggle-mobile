@@ -150,6 +150,9 @@ namespace Toggl.Joey.UI.Fragments
             if (ServiceContainer.Resolve<AuthManager> ().OfflineMode) {
                 nouserDisclaimer.Visibility = ViewStates.Visible;
                 reportsContainer.Visibility = ViewStates.Gone;
+            } else {
+                nouserDisclaimer.Visibility = ViewStates.Gone;
+                reportsContainer.Visibility = ViewStates.Visible;
             }
 
             return view;
