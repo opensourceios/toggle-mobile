@@ -376,8 +376,8 @@ namespace Toggl.Joey.UI.Adapters
 
                 var color = Color.Transparent;
                 var ctx = ServiceContainer.Resolve<Context> ();
-
-                if (DataSource.Data.RemoteId.HasValue && !DataSource.Data.IsDirty) {
+                var authManager = ServiceContainer.Resolve<AuthManager> ();
+                if (authManager.OfflineMode || (DataSource.Data.RemoteId.HasValue && !DataSource.Data.IsDirty)) {
                     NotSyncedView.Visibility = ViewStates.Gone;
                 } else {
                     NotSyncedView.Visibility = ViewStates.Visible;

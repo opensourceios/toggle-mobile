@@ -15,6 +15,7 @@ using Toggl.Joey.UI.Views;
 using Toggl.Phoebe;
 using Toggl.Phoebe.Data.DataObjects;
 using Toggl.Phoebe.Data.ViewModels;
+using Toggl.Phoebe.Net;
 using XPlatUtils;
 using ActionBar = Android.Support.V7.App.ActionBar;
 using Activity = Android.Support.V7.App.AppCompatActivity;
@@ -192,9 +193,9 @@ namespace Toggl.Joey.UI.Fragments
                     SaveMenuItem.SetVisible (ViewModel.IsManual);
                 }
             });
-
+            var authManager = ServiceContainer.Resolve<AuthManager> ();
             syncErrorBinding = this.SetBinding (() => ViewModel.SyncError).WhenSourceChanges (() => {
-                SyncError.Visibility = ViewModel.SyncError ? ViewStates.Visible : ViewStates.Gone;
+                SyncError.Visibility = (ViewModel.SyncError && !authManager.OfflineMode) ? ViewStates.Visible : ViewStates.Gone;
             });
 
             // Configure option menu.
