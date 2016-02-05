@@ -89,7 +89,7 @@ namespace Toggl.Phoebe.Net
             }
         }
 
-        public async void UploadUserData ()
+        public async void RunUpload ()
         {
             var authManager = ServiceContainer.Resolve<AuthManager> ();
             if (!authManager.IsAuthenticated) {

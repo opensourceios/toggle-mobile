@@ -67,7 +67,7 @@ namespace Toggl.Joey.UI.Activities
             var authManager = ServiceContainer.Resolve<AuthManager> ();
             AuthResult authRes;
             try {
-                authRes = await authManager.SetupNoUserAsync ();
+                authRes = await authManager.NoUserSetupAsync ();
             } catch (InvalidOperationException ex) {
                 var log = ServiceContainer.Resolve<ILogger> ();
                 log.Info (LogTag, ex, "Failed to set up offline mode.");

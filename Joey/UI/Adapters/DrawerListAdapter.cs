@@ -92,6 +92,7 @@ namespace Toggl.Joey.UI.Adapters
                     TextResId = Resource.String.MainDrawerSignup,
                     ImageResId = Resource.Drawable.IcNavLogout,
                     IsEnabled = true,
+                    Visible = authManager.OfflineMode,
                 }
             };
             collapsedRowItems = rowItems;

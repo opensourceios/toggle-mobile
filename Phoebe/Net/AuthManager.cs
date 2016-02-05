@@ -154,7 +154,7 @@ namespace Toggl.Phoebe.Net
             return AuthResult.Success;
         }
 
-        private async Task<AuthResult> OfflineAuthenticateAsync ()
+        public async Task<AuthResult> NoUserSetupAsync ()
         {
             IsAuthenticating = true;
 
@@ -255,36 +255,114 @@ namespace Toggl.Phoebe.Net
             }), AuthChangeReason.Signup, AccountCredentials.Google);
         }
 
-        public Task<AuthResult> SetupNoUserAsync ()
-        {
-            return OfflineAuthenticateAsync ();
-        }
-
-        public async Task<UserJson> RegisterFromNouserAsync (string email, string password)
+        public async Task<AuthResult> ActivateRealUser (Func<Task<UserJson>> getUser)
         {
             var log = ServiceContainer.Resolve<ILogger> ();
             var client = ServiceContainer.Resolve<ITogglClient> ();
             var credStore = ServiceContainer.Resolve<ISettingsStore> ();
 
-            var userJson = await client.Create (new UserJson() {
-                Email = email,
-                Password = password,
-                Timezone = Time.TimeZoneId,
-            });
+            try {
+                UserJson userJson;
+                try {
+                    userJson = await getUser ();
+                    if (userJson == null) {
+                        ServiceContainer.Resolve<MessageBus> ().Send (
+                            new AuthFailedMessage (this, AuthResult.InvalidCredentials));
+                        return AuthResult.InvalidCredentials;
+                    } else if (userJson.DefaultWorkspaceId == 0) {
+                        ServiceContainer.Resolve<MessageBus> ().Send (
+                            new AuthFailedMessage (this, AuthResult.NoDefaultWorkspace));
+                        return AuthResult.NoDefaultWorkspace;
+                    }
+                } catch (Exception ex) {
+                    var reqEx = ex as UnsuccessfulRequestException;
+                    if (reqEx != null && (reqEx.IsForbidden || reqEx.IsValidationError)) {
+                        ServiceContainer.Resolve<MessageBus> ().Send (
+                            new AuthFailedMessage (this, AuthResult.InvalidCredentials));
+                        return AuthResult.InvalidCredentials;
+                    }
 
-            if (userJson != null) {
-                var dataStore = ServiceContainer.Resolve<IDataStore> ();
-                User = await dataStore.ExecuteInTransactionAsync (ctx => userJson.Import (ctx));
-                // For sync querys
-                credStore.UserId = User.Id;
+                    if (ex.IsNetworkFailure () || ex is TaskCanceledException) {
+                        log.Info (Tag, ex, "Failed authenticate user.");
+                    } else {
+                        log.Warning (Tag, ex, "Failed to authenticate user.");
+                    }
+
+                    ServiceContainer.Resolve<MessageBus> ().Send (
+                        new AuthFailedMessage (this, AuthResult.NetworkError, ex));
+                    return AuthResult.NetworkError;
+                }
+                // Import the user into our database:
+                UserData userData;
+                try {
+                    var dataStore = ServiceContainer.Resolve<IDataStore> ();
+                    userData = await dataStore.ExecuteInTransactionAsync (ctx => userJson.Import (ctx));
+                } catch (Exception ex) {
+                    log.Error (Tag, ex, "Failed to import authenticated user.");
+
+                    ServiceContainer.Resolve<MessageBus> ().Send (
+                        new AuthFailedMessage (this, AuthResult.SystemError, ex));
+                    return AuthResult.SystemError;
+                }
+
+                credStore.UserId = userData.Id;
                 credStore.ApiToken = userJson.ApiToken;
                 credStore.OfflineMode = false;
 
+                User = userData;
                 Token = userJson.ApiToken;
                 OfflineMode = false;
+
                 IsAuthenticated = true;
+
+//                ServiceContainer.Resolve<MessageBus> ().Send (
+//                    new AuthChangedMessage (this, reason));
+            } finally {
+                IsAuthenticating = false;
             }
-            return userJson;
+            return AuthResult.Success;
+
+//            if (user != null) {
+//                var dataStore = ServiceContainer.Resolve<IDataStore> ();
+//                User = await dataStore.ExecuteInTransactionAsync (ctx => user.Import (ctx));
+//                // For sync querys
+//                credStore.UserId = User.Id;
+//                credStore.ApiToken = user.ApiToken;
+//                credStore.OfflineMode = false;
+//
+//                Token = user.ApiToken;
+//                OfflineMode = false;
+//                IsAuthenticated = true;
+//            }
+
+//            return user;
+        }
+
+        public async Task<AuthResult> RegisterNoUserEmailAsync (string email, string password)
+        {
+            var log = ServiceContainer.Resolve<ILogger> ();
+            var client = ServiceContainer.Resolve<ITogglClient> ();
+
+            log.Info (Tag, "Signing up with email.");
+
+            return await ActivateRealUser (() => client.Create (new UserJson {
+                Email = email,
+                Password = password,
+                Timezone = Time.TimeZoneId,
+            }));
+        }
+
+        public async Task<AuthResult> RegisterNoUserGoogleAsync (string accessToken)
+        {
+            var log = ServiceContainer.Resolve<ILogger> ();
+            var client = ServiceContainer.Resolve<ITogglClient> ();
+
+            log.Info (Tag, "Signing up with email Google access token.");
+
+            return await ActivateRealUser (() => client.Create (new UserJson () {
+                GoogleAccessToken = accessToken,
+                Timezone = Time.TimeZoneId,
+            }));
         }
 
         public void Forget ()
