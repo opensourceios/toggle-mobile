@@ -778,6 +778,10 @@
     <AndroidResource Include="Resources\drawable-mdpi\IcCheckGreen.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\IcCheckGreen.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\IcCheckGreen.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\IcGoogleWhite.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\IcGoogleWhite.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\IcGoogleWhite.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\IcGoogleWhite.png" />
     <AndroidResource Include="Resources\layout\RegisterUserFragment.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
