@@ -254,7 +254,12 @@ namespace Toggl.Joey.UI.Fragments
         #region Sync
         public void OnRefresh ()
         {
-            ViewModel.TriggerFullSync ();
+            if (!ServiceContainer.Resolve<AuthManager> ().OfflineMode) {
+                ViewModel.TriggerFullSync ();
+            } else {
+                swipeLayout.Refreshing = false;
+            }
+
         }
 
         private void SyncFinished (SyncFinishedMessage msg)
