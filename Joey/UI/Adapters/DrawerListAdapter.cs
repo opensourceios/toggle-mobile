@@ -48,7 +48,7 @@ namespace Toggl.Joey.UI.Adapters
                             TextResId = Resource.String.MainDrawerReportsWeek,
                             ImageResId = 0,
                             IsEnabled = true,
-                            Visible = !authManager.OfflineMode,
+                            VMode = VisibilityMode.Normal,
                         },
                         new DrawerItem () {
                             Id = ReportsMonthPageId,
@@ -56,7 +56,7 @@ namespace Toggl.Joey.UI.Adapters
                             TextResId = Resource.String.MainDrawerReportsMonth,
                             ImageResId = 0,
                             IsEnabled = true,
-                            Visible = !authManager.OfflineMode,
+                            VMode = VisibilityMode.Normal,
                         },
                         new DrawerItem () {
                             Id = ReportsYearPageId,
@@ -64,7 +64,7 @@ namespace Toggl.Joey.UI.Adapters
                             TextResId = Resource.String.MainDrawerReportsYear,
                             ImageResId = 0,
                             IsEnabled = true,
-                            Visible = !authManager.OfflineMode,
+                            VMode = VisibilityMode.Normal,
                         }
                     }
                 },
@@ -85,14 +85,14 @@ namespace Toggl.Joey.UI.Adapters
                     TextResId = Resource.String.MainDrawerLogout,
                     ImageResId = Resource.Drawable.IcNavLogout,
                     IsEnabled = true,
-                    Visible = !authManager.OfflineMode,
+                    VMode = VisibilityMode.Normal,
                 },
                 new DrawerItem () {
                     Id = RegisterUserPageId,
                     TextResId = Resource.String.MainDrawerSignup,
                     ImageResId = Resource.Drawable.IcNavLogout,
                     IsEnabled = true,
-                    Visible = authManager.OfflineMode,
+                    VMode = VisibilityMode.Offline,
                 }
             };
             collapsedRowItems = rowItems;
@@ -125,16 +125,17 @@ namespace Toggl.Joey.UI.Adapters
         {
             var newList = new List<DrawerItem> ();
             foreach (var item in list) {
-                if (!item.Visible) {
+                if (item.VMode == VisibilityMode.Normal && authManager.OfflineMode || item.VMode == VisibilityMode.Offline && !authManager.OfflineMode) {
                     continue;
                 }
                 newList.Add (item);
                 if (item.SubItems != null) {
                     var subItems = new List<DrawerItem> ();
                     foreach (var sub in item.SubItems) {
-                        if (sub.Visible) {
-                            subItems.Add (sub);
+                        if (sub.VMode == VisibilityMode.Normal && authManager.OfflineMode || sub.VMode == VisibilityMode.Offline && !authManager.OfflineMode) {
+                            continue;
                         }
+                        subItems.Add (sub);
                     }
                     item.SubItems = subItems.Count > 0 ? subItems : null;
                 }
@@ -234,7 +235,7 @@ namespace Toggl.Joey.UI.Adapters
             public int ChildOf = 0;
             public bool IsEnabled;
             public bool Expanded = false;
-            public bool Visible = true;
+            public VisibilityMode VMode = VisibilityMode.Both;
             public List<DrawerItem> SubItems;
         }
 
@@ -280,6 +281,11 @@ namespace Toggl.Joey.UI.Adapters
                 TitleTextView.Enabled = DataSource.IsEnabled;
             }
         }
+
+        public enum VisibilityMode {
+            Normal,
+            Offline,
+            Both
+        }
     }
 }
-
