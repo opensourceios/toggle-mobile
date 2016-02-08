@@ -55,10 +55,9 @@ namespace Toggl.Joey.UI.Fragments
             disclaimerContainer = view.FindViewById<LinearLayout> (Resource.Id.FeedbackDisclaimer);
             noUserRegisterButton = view.FindViewById<Button> (Resource.Id.FeedbackRegisterButton);
 
-            if (ServiceContainer.Resolve<AuthManager> ().OfflineMode) {
-                disclaimerContainer.Visibility = ViewStates.Visible;
-                feedbackContainer.Visibility = ViewStates.Gone;
-            }
+            bool offline = ServiceContainer.Resolve<AuthManager> ().OfflineMode;
+            disclaimerContainer.Visibility = offline ? ViewStates.Visible : ViewStates.Gone;
+            feedbackContainer.Visibility = offline ? ViewStates.Gone : ViewStates.Visible;
 
             noUserRegisterButton.Click += (sender, e) => ((MainDrawerActivity)Activity).OpenPage (DrawerListAdapter.RegisterUserPageId);
 
