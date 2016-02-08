@@ -237,16 +237,16 @@
     <string name="IntroSlideTitle3">Toggl anywhere</string>
     <string name="IntroSlideTitle4">Ideal for teams</string>
     <string name="ReportsDisclaimerTitle">Boost your productivity!</string>
-    <string name="ReportsDisclaimerText">You do not have access to reports yet.\nSign up to get the most out of Toggl!</string>
+    <string name="ReportsDisclaimerText">Sign up to get access to your reports.</string>
     <string name="FeedbackDisclaimerTitle">Oh no!</string>
-    <string name="FeedbackDisclaimerText">You do not have access to feedback.\nSign up and let us know how you\'re feeling!</string>
+    <string name="FeedbackDisclaimerText">You don\'t have access yet.\nSign up to get in touch with us!</string>
     <string name="NoUserSignupText">Sign up for free</string>
     <string name="IntroStartTracking">Start tracking</string>
     <string name="RegisterSuccessTitle">Congrats!</string>
-    <string name="RegisterSuccessHeading">You are now signed up and ready to go.</string>
-    <string name="RegisterSuccessListHeading">Did you know, you now have access to:</string>
-    <string name="RegisterSuccessListItem1">Reports to analyze your data</string>
-    <string name="RegisterSuccessListItem2">Teams to boost group productivity</string>
-    <string name="RegisterSuccessListItem3">Web and desktop apps</string>
+    <string name="RegisterSuccessHeading">You\'re now signed up.</string>
+    <string name="RegisterSuccessListHeading">With your new account you can:</string>
+    <string name="RegisterSuccessListItem1">See your time in reports</string>
+    <string name="RegisterSuccessListItem2">Track together with your team</string>
+    <string name="RegisterSuccessListItem3">Analyze your data in depth in Toggl web</string>
     <string name="RegisterSuccessButton">Go to timer</string>
 </resources>
