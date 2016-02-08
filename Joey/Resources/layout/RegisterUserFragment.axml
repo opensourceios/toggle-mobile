@@ -88,6 +88,7 @@
                 android:gravity="center"
                 android:text="By signing up you agree to Toggl's Terms and Privacy Policy"
                 android:textSize="14sp"
+                android:textColorLink="@color/material_black"
                 android:layout_gravity="center_horizontal" />
         </LinearLayout>
         <LinearLayout
