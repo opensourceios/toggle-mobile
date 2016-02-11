@@ -526,21 +526,6 @@ namespace Toggl.Phoebe.Data.Models
                 throw new InvalidOperationException (String.Format ("Cannot continue a time entry in {0} state.", timeEntryData.State));
             }
 
-            // We can continue time entries which haven't been synced yet:
-            if (timeEntryData.DurationOnly && timeEntryData.StartTime.ToLocalTime ().Date == Time.Now.Date) {
-                if (timeEntryData.RemoteId == null) {
-                    // Mutate data
-                    timeEntryData = MutateData (timeEntryData, data => {
-                        data.State = TimeEntryState.Running;
-                        data.StartTime = Time.UtcNow - GetDuration (data, Time.UtcNow);
-                        data.StopTime = null;
-                    });
-                    var bus = ServiceContainer.Resolve<MessageBus> ();
-                    bus.Send (new StartStopMessage (timeEntryData));
-                    return await SaveTimeEntryDataAsync (timeEntryData);
-                }
-            }
-
             // Create new time entry:
             var newData = new TimeEntryData () {
                 WorkspaceId = timeEntryData.WorkspaceId,
