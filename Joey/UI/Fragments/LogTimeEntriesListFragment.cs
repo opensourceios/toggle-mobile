@@ -98,6 +98,7 @@ namespace Toggl.Joey.UI.Fragments
             hasMoreBinging = this.SetBinding (()=> ViewModel.HasMoreItems).WhenSourceChanges (SetFooterState);
             hasErrorBinding = this.SetBinding (()=> ViewModel.HasLoadErrors).WhenSourceChanges (SetFooterState);
             hasItemsBinding = this.SetBinding (()=> ViewModel.HasItems).WhenSourceChanges (SetFooterState);
+            
             fabBinding = this.SetBinding (() => ViewModel.IsTimeEntryRunning, () => StartStopBtn.ButtonAction)
                          .ConvertSourceToTarget (isRunning => isRunning ? FABButtonState.Stop : FABButtonState.Start);
 

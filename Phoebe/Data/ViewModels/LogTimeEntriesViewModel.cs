@@ -40,7 +40,6 @@ namespace Toggl.Phoebe.Data.ViewModels
             subscriptionSyncFinished = bus.Subscribe<SyncFinishedMessage> (OnSyncFinished);
             subscriptionUpdateFinished = bus.Subscribe<UpdateFinishedMessage> (OnUpdateItemsFinished);
 
-            HasMoreItems = true;
             HasLoadErrors = false;
             HasItems = false;
 
@@ -126,18 +125,12 @@ namespace Toggl.Phoebe.Data.ViewModels
 
         public async Task LoadMore ()
         {
-
             HasMoreItems = true;
             HasLoadErrors = false;
 
             var startDate = await collectionFeed.LoadMore ();
             var syncManager = ServiceContainer.Resolve<ISyncManager> ();
             syncManager.RunTimeEntriesUpdate (startDate, TimeEntriesFeed.DaysLoad);
-            var authManager = ServiceContainer.Resolve<AuthManager> ();
-            if (authManager.OfflineMode) {
-                HasMoreItems = Collection.Count > 0;
-                return;
-            }
         }
         #endregion
 
