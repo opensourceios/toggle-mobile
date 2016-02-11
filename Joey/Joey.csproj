@@ -757,7 +757,6 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\layout\CreateUserFragment.axml" />
     <AndroidResource Include="Resources\layout\IntroLayout.axml" />
-    <AndroidResource Include="Resources\layout\IntroScreen.axml" />
     <AndroidResource Include="Resources\drawable-hdpi\img_reports.png" />
     <AndroidResource Include="Resources\drawable-mdpi\img_reports.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\img_reports.png" />

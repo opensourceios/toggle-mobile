@@ -232,10 +232,7 @@
     <string name="TimeEntriesListFooterTryAgain">Try again</string>
     <string name="EditTimeEntrySyncFailed">This time entry has failed to sync correctly</string>
     <string name="CreateUserButtonText">Sign up</string>
-    <string name="IntroSlideTitle1">New to toggl?</string>
-    <string name="IntroSlideTitle2">Sexy Reports</string>
-    <string name="IntroSlideTitle3">Toggl anywhere</string>
-    <string name="IntroSlideTitle4">Ideal for teams</string>
+    <string name="IntroTitle">New to toggl?</string>
     <string name="ReportsDisclaimerTitle">Boost your productivity!</string>
     <string name="ReportsDisclaimerText">Sign up to get access to your reports.</string>
     <string name="FeedbackDisclaimerTitle">Oh no!</string>
