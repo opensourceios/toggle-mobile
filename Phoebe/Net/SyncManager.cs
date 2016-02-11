@@ -52,7 +52,7 @@ namespace Toggl.Phoebe.Net
         public async void Run (SyncMode mode = SyncMode.Full)
         {
             var authManager = ServiceContainer.Resolve<AuthManager> ();
-            if (!authManager.IsAuthenticated || authManager.OfflineMode) {
+            if (!authManager.IsAuthenticated) {
                 return;
             }
             if (IsRunning) {
@@ -61,6 +61,11 @@ namespace Toggl.Phoebe.Net
 
             var bus = ServiceContainer.Resolve<MessageBus> ();
             var network = ServiceContainer.Resolve<INetworkPresence> ();
+
+            if (authManager.OfflineMode) {
+                bus.Send (new SyncFinishedMessage (this, mode, false, null));
+                return;
+            }
 
             if (!network.IsNetworkPresent) {
                 network.RegisterSyncWhenNetworkPresent ();
