@@ -79,6 +79,7 @@
     </Reference>
     <Reference Include="AutoMapper">
       <HintPath>..\packages\AutoMapper.4.2.0\lib\portable-net45+win+wpa81+MonoAndroid10+Xamarin.iOS10+MonoTouch10\AutoMapper.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Collections" />
     <Reference Include="System.Collections.Concurrent" />
@@ -98,6 +99,12 @@
     <Reference Include="System.Threading" />
     <Reference Include="System.Threading.Tasks" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Plugin.Settings">
+      <HintPath>..\packages\Xam.Plugins.Settings.2.1.0\lib\MonoAndroid10\Plugin.Settings.dll</HintPath>
+    </Reference>
+    <Reference Include="Plugin.Settings.Abstractions">
+      <HintPath>..\packages\Xam.Plugins.Settings.2.1.0\lib\MonoAndroid10\Plugin.Settings.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Contrib\XPlatUtils\XPlatUtils\ServiceContainer.cs">
