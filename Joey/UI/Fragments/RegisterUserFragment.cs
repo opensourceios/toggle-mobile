@@ -267,8 +267,6 @@ namespace Toggl.Joey.UI.Fragments
             case AuthResult.InvalidCredentials:
                 if (!googleAuth) {
                     dia = new SignupFailedDialogFragment ();
-                } else if (googleAuth) {
-                    dia = new SignupFailedDialogFragment ();
                 }
                 break;
             case AuthResult.NetworkError:
@@ -354,8 +352,6 @@ namespace Toggl.Joey.UI.Fragments
                 }
                 IsAuthenticating = true;
 
-                LoginActivity activity;
-
                 try {
                     var log = ServiceContainer.Resolve<ILogger> ();
                     var authManager = ServiceContainer.Resolve<AuthManager> ();
@@ -395,10 +391,13 @@ namespace Toggl.Joey.UI.Fragments
 
                     try {
                         var authRes = await authManager.RegisterNoUserGoogleAsync (token);
-//                            if (authRes != AuthResult.Success) {
-//                                ClearGoogleToken (ctx, token);
-//                                ShowAuthError (Email, authRes, true);
-//                            }
+
+                        if (authRes != AuthResult.Success) {
+                            ClearGoogleToken (ctx, token);
+                            var dia = new SignupFailedDialogFragment ();
+                            dia.Show (FragmentManager, "auth_result_dialog");
+                        }
+
                     } catch (InvalidOperationException ex) {
                         log.Info (LogTag, ex, "Failed to authenticate user with Google login.");
                     }
@@ -412,12 +411,6 @@ namespace Toggl.Joey.UI.Fragments
                     .Remove (this)
                     .Commit ();
                 }
-
-                // Try to make the activity recheck auth status
-//                activity = Activity as LoginActivity;
-//                if (activity != null) {
-//                    activity.StartAuthActivity ();
-//                }
             }
 
             private void ClearGoogleToken (Context ctx, string token)
@@ -439,20 +432,7 @@ namespace Toggl.Joey.UI.Fragments
                     return Arguments != null ? Arguments.GetString (EmailArgument) : null;
                 }
             }
-
-            private bool isAuthenticating;
-
-            private bool IsAuthenticating
-            {
-                get { return isAuthenticating; }
-                set {
-                    isAuthenticating = value;
-//                    var activity = Activity as LoginActivity;
-//                    if (activity != null) {
-//                        activity.IsAuthenticating = isAuthenticating;
-//                    }
-                }
-            }
+            private bool IsAuthenticating { get; set; }
         }
 
         public class GoogleAccountSelectionDialogFragment : DialogFragment

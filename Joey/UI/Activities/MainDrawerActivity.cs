@@ -43,7 +43,7 @@ namespace Toggl.Joey.UI.Activities
         private readonly Lazy<SettingsListFragment> settingsFragment = new Lazy<SettingsListFragment> ();
         private readonly Lazy<ReportsPagerFragment> reportFragment = new Lazy<ReportsPagerFragment> ();
         private readonly Lazy<FeedbackFragment> feedbackFragment = new Lazy<FeedbackFragment> ();
-        private readonly Lazy<RegisterUserFragment> createUserFragment = new Lazy<RegisterUserFragment> ();
+        private readonly Lazy<RegisterUserFragment> registerUserFragment = new Lazy<RegisterUserFragment> ();
         private readonly List<int> pageStack = new List<int> ();
         private readonly Handler handler = new Handler ();
         private AuthManager authManager;
@@ -244,7 +244,7 @@ namespace Toggl.Joey.UI.Activities
             } else if (id == DrawerListAdapter.RegisterUserPageId) {
                 SupportActionBar.SetTitle (Resource.String.MainDrawerSignup);
                 drawerAdapter.ExpandCollapse (DrawerListAdapter.RegisterUserPageId);
-                OpenFragment (createUserFragment.Value);
+                OpenFragment (registerUserFragment.Value);
             } else {
                 SupportActionBar.SetTitle (Resource.String.MainDrawerTimer);
                 OpenFragment (trackingFragment.Value);
