@@ -22,6 +22,10 @@ namespace Toggl.Phoebe.Net
         public static readonly string PropertyUser = GetPropertyName (m => m.User);
         public static readonly string PropertyToken = GetPropertyName (m => m.Token);
 
+        public static readonly string OfflineUserName = "offlineUser";
+        public static readonly string OfflineUserEmail = "nouser@toggl.com";
+        public static readonly string OfflineWorkspaceName = "Workspace";
+
         private readonly Subscription<DataChangeMessage> subscriptionDataChange;
         private static readonly string Tag = "AuthManager";
 
@@ -161,10 +165,10 @@ namespace Toggl.Phoebe.Net
             //Create dummy user and workspace.
             var userJson = new UserJson () {
                 Id = 100,
-                Name = "offlineUser",
+                Name = OfflineUserName,
                 StartOfWeek = DayOfWeek.Monday,
                 Locale = "",
-                Email = "nouser@toggl.com",
+                Email = OfflineUserEmail,
                 Password = "no-password",
                 Timezone = Time.TimeZoneId,
                 DefaultWorkspaceId = 1000
@@ -172,7 +176,7 @@ namespace Toggl.Phoebe.Net
 
             var workspaceJson = new WorkspaceJson () {
                 Id = 1000,
-                Name = "Workspace",
+                Name = OfflineWorkspaceName,
                 IsPremium = false,
                 IsAdmin = false
             };
@@ -196,11 +200,11 @@ namespace Toggl.Phoebe.Net
                 var credStore = ServiceContainer.Resolve<ISettingsStore> ();
                 credStore.UserId = userData.Id;
                 credStore.ApiToken = userJson.ApiToken;
-                credStore.OfflineMode = userData.Name == "offlineUser";
+                credStore.OfflineMode = userData.Name == OfflineUserName;
 
                 User = userData;
                 Token = userJson.ApiToken;
-                OfflineMode = userData.Name == "offlineUser";
+                OfflineMode = userData.Name == OfflineUserName;
                 IsAuthenticated = true;
 
                 ServiceContainer.Resolve<MessageBus> ().Send (
@@ -314,28 +318,10 @@ namespace Toggl.Phoebe.Net
                 OfflineMode = false;
 
                 IsAuthenticated = true;
-
-//                ServiceContainer.Resolve<MessageBus> ().Send (
-//                    new AuthChangedMessage (this, reason));
             } finally {
                 IsAuthenticating = false;
             }
             return AuthResult.Success;
-
-//            if (user != null) {
-//                var dataStore = ServiceContainer.Resolve<IDataStore> ();
-//                User = await dataStore.ExecuteInTransactionAsync (ctx => user.Import (ctx));
-//                // For sync querys
-//                credStore.UserId = User.Id;
-//                credStore.ApiToken = user.ApiToken;
-//                credStore.OfflineMode = false;
-//
-//                Token = user.ApiToken;
-//                OfflineMode = false;
-//                IsAuthenticated = true;
-//            }
-
-//            return user;
         }
 
         public async Task<AuthResult> RegisterNoUserEmailAsync (string email, string password)
