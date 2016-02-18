@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Android.InputMethodServices;
 using Android.OS;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
 using Toggl.Joey.Data;
@@ -206,6 +209,12 @@ namespace Toggl.Joey.UI.Fragments
             if (settingsStore.ChooseProjectForNew && LogTimeEntriesListFragment.NewTimeEntryStartedByFAB) {
                 LogTimeEntriesListFragment.NewTimeEntryStartedByFAB = false;
                 OpenProjectListActivity ();
+            }
+
+            if (!settingsStore.FirstTimeEntryFocus) {
+                DescriptionField.RequestFocus ();
+                ((EditTimeEntryActivity)Activity).ShowSoftKeyboard (DescriptionField.TextField, false);
+                settingsStore.FirstTimeEntryFocus = true;
             }
         }
 

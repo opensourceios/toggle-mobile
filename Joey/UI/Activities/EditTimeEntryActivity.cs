@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using Android.Views;
+using Android.Views.InputMethods;
+using Android.Widget;
 using Toggl.Joey.UI.Fragments;
 
 namespace Toggl.Joey.UI.Activities
@@ -60,6 +63,15 @@ namespace Toggl.Joey.UI.Activities
                     .Commit ();
                 }
             }
+        }
+
+        public void ShowSoftKeyboard (View input, bool selectText)
+        {
+            if (selectText) { ((EditText)input).SelectAll(); }
+            ThreadPool.QueueUserWorkItem (s => {
+                Thread.Sleep (100); // For some reason, a short delay is required here.
+                RunOnUiThread (() => ((InputMethodManager)GetSystemService (InputMethodService)).ShowSoftInput (input, ShowFlags.Implicit));
+            });
         }
     }
 }
