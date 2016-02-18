@@ -781,6 +781,10 @@
     <AndroidResource Include="Resources\drawable-mdpi\IcGoogleWhite.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\IcGoogleWhite.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\IcGoogleWhite.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\arrow_step_1.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\arrow_step_1.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\arrow_step_1.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\arrow_step_1.png" />
     <AndroidResource Include="Resources\layout\RegisterUserFragment.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

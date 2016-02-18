@@ -147,6 +147,10 @@
     <string name="SettingsGeneralShowNotificationTitle">Running entry notification</string>
     <string name="SettingsGeneralShowNotificationDesc">Show the running entry as a notification.</string>
     <string name="SettingsClearNoUserData">Clear data</string>
+    <string name="SettingsClearDataTitle">Are you sure?</string>
+    <string name="SettingsClearDataText">All your data will be erased.</string>
+    <string name="SettingsClearDataOKButton">Clear everything</string>
+    <string name="SettingsClearDataCancelButton">Cancel</string>
     <string name="ForcedUpgradeDialogTitle">Update time!</string>
     <string name="ForcedUpgradeDialogMessage">It seems that you haven\'t updated your Toggl app in a while&#8230;\n\nNow is the time as this version is no longer supported.</string>
     <string name="ForcedUpgradeDialogUpdate">Open Play Store</string>
@@ -237,11 +241,14 @@
     <string name="ReportsDisclaimerText">Sign up to get access to your reports.</string>
     <string name="FeedbackDisclaimerTitle">Oh no!</string>
     <string name="FeedbackDisclaimerText">You don\'t have access yet.\nSign up to get in touch with us!</string>
-    <string name="NoUserSignupTitle">You\'ll get access to reports and many other benefits!</string>
+    <string name="NoUserSignupTitle">You\'ll get access to reports and support!</string>
     <string name="NoUserSignupText">Sign up for free</string>
     <string name="IntroStartTracking">Get started</string>
     <string name="IntroLoginButtonText">Sign in</string>
     <string name="IntroLoginText">Already have an account?</string>
+    <string name="LayoverTitle">Hey there!</string>
+    <string name="LayoverText">Start tracking here</string>
+    <string name="LayoverGotIt">Got it!</string>
     <string name="RegisterSuccessTitle">Congrats!</string>
     <string name="RegisterSuccessHeading">You\'re now signed up.</string>
     <string name="RegisterSuccessListHeading">With your new account you can:</string>

@@ -13,6 +13,7 @@ using Android.Support.V7.Widget.Helper;
 using Android.Views;
 using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
+using Toggl.Joey.Data;
 using Toggl.Joey.UI.Activities;
 using Toggl.Joey.UI.Adapters;
 using Toggl.Joey.UI.Components;
@@ -38,6 +39,8 @@ namespace Toggl.Joey.UI.Fragments
         private SwipeRefreshLayout swipeLayout;
         private View emptyMessageView;
         private View experimentEmptyView;
+        private View layoverView;
+        private Button layoverDismissButton;
         private LogTimeEntriesAdapter logAdapter;
         private CoordinatorLayout coordinatorLayout;
         private Subscription<SyncFinishedMessage> drawerSyncFinished;
@@ -72,6 +75,9 @@ namespace Toggl.Joey.UI.Fragments
             emptyMessageView = view.FindViewById<View> (Resource.Id.EmptyMessageView);
             welcomeMessage = view.FindViewById<TextView> (Resource.Id.WelcomeTextView);
             noItemsMessage = view.FindViewById<TextView> (Resource.Id.EmptyTitleTextView);
+            layoverView = view.FindViewById<View> (Resource.Id.LayoverView);
+            layoverDismissButton = view.FindViewById<Button> (Resource.Id.LayoverButton);
+            layoverDismissButton.Click += OnAllrightButtonClicked;
             recyclerView = view.FindViewById<RecyclerView> (Resource.Id.LogRecyclerView);
             recyclerView.SetLayoutManager (new LinearLayoutManager (Activity));
             swipeLayout = view.FindViewById<SwipeRefreshLayout> (Resource.Id.LogSwipeContainer);
@@ -81,7 +87,20 @@ namespace Toggl.Joey.UI.Fragments
             timerComponent = ((MainDrawerActivity)Activity).Timer; // TODO: a better way to do this?
             HasOptionsMenu = true;
 
+            var settingsStore = ServiceContainer.Resolve<SettingsStore> ();
+            var authManager = ServiceContainer.Resolve<AuthManager> ();
+            if (settingsStore.GotWelcomeMessage || !authManager.OfflineMode) {
+                layoverView.Visibility = ViewStates.Gone;
+            }
+
             return view;
+        }
+
+        private void OnAllrightButtonClicked (object sender, EventArgs e)
+        {
+            var settingsStore = ServiceContainer.Resolve<SettingsStore> ();
+            settingsStore.GotWelcomeMessage = true;
+            layoverView.Visibility = ViewStates.Gone;
         }
 
         public async override void OnViewCreated (View view, Bundle savedInstanceState)
