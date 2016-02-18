@@ -237,6 +237,7 @@
     <string name="ReportsDisclaimerText">Sign up to get access to your reports.</string>
     <string name="FeedbackDisclaimerTitle">Oh no!</string>
     <string name="FeedbackDisclaimerText">You don\'t have access yet.\nSign up to get in touch with us!</string>
+    <string name="NoUserSignupTitle">You\'ll get access to reports and many other benefits!</string>
     <string name="NoUserSignupText">Sign up for free</string>
     <string name="IntroStartTracking">Get started</string>
     <string name="IntroLoginButtonText">Sign in</string>
