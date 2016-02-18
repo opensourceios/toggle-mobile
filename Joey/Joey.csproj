@@ -684,7 +684,6 @@
     <AndroidResource Include="Resources\drawable-xhdpi\SplashScreen.png" />
     <AndroidResource Include="Resources\drawable-mdpi\SplashScreen.png" />
     <AndroidResource Include="Resources\drawable-hdpi\SplashScreen.png" />
-    <AndroidResource Include="Resources\drawable\RedCursor.xml" />
     <AndroidResource Include="Resources\drawable\DropShadowVerticalReverse.xml" />
     <AndroidResource Include="Resources\drawable-v21\play_button_background.xml" />
     <AndroidResource Include="Resources\drawable\play_button_background.xml" />
@@ -786,6 +785,7 @@
     <AndroidResource Include="Resources\drawable-xhdpi\arrow_step_1.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\arrow_step_1.png" />
     <AndroidResource Include="Resources\layout\RegisterUserFragment.axml" />
+    <AndroidResource Include="Resources\drawable\BlackCursor.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>

@@ -38,6 +38,7 @@
     <color name="material_tag_text">#ffffff</color>
     <color name="material_green">#4dd965</color>
     <color name="material_gray_bar">#4C4C4C</color>
+    <color name="material_green_input">#4BC800</color>
     <color name="background_delete_item">#333333</color>
     <color name="button_color_highlight">@color/light_gray</color>
     <color name="button_color_highlight_press">#f2f2f2</color>

@@ -41,7 +41,7 @@ namespace Toggl.Joey.UI.Views
 
 
             var states = new int[][] { new int[]{ } };
-            var createNewColor = new int[] {context.Resources.GetColor (Resource.Color.material_red)};
+            var createNewColor = new int[] {context.Resources.GetColor (Resource.Color.material_green)};
 
             backgroundTintNew = new ColorStateList (states, createNewColor);
 
