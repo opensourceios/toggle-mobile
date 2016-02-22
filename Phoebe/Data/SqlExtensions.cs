@@ -166,6 +166,31 @@ namespace Toggl.Phoebe.Data
             return result;
         }
 
+
+        public static int UpdateTable<T> (IDataStoreContext ctx, params Tuple<string, object>[] args)
+        {
+            var query = string.Format (
+                            "UPDATE {0} SET {1}",
+                            ctx.Connection.GetMapping<T> ().TableName,
+                            string.Join (",", args.Select (x => x.Item1 + "=?"))
+                        );
+            return ctx.Connection
+                   .CreateCommand (query, args.Select (x => x.Item2).ToArray ())
+                   .ExecuteNonQuery ();
+        }
+
+        public static int DeleteTable<T> (IDataStoreContext ctx, params Tuple<string, object>[] conditions)
+        {
+            var query = string.Format (
+                            "DELETE FROM {0} WHERE {1}",
+                            ctx.Connection.GetMapping<T> ().TableName,
+                            string.Join (" AND ", conditions.Select (x => x.Item1 + "=?"))
+                        );
+            return ctx.Connection
+                   .CreateCommand (query, conditions.Select (x => x.Item2).ToArray ())
+                   .ExecuteNonQuery ();
+        }
+
         private class ColumnRow<T>
         {
             public T Value { get; set; }

@@ -122,7 +122,7 @@ namespace Toggl.Phoebe.Net
 
             try {
                 // Make sure that the RunInBackground is actually started on a background thread
-                await await Task.Factory.StartNew (() => MergeNoUserData ());
+                await Task.Factory.StartNew (() => MergeNoUserData ());
             } finally {
                 IsRunning = false;
                 subscriptionDataChange = bus.Subscribe<DataChangeMessage> (OnDataChange);
@@ -204,40 +204,25 @@ namespace Toggl.Phoebe.Net
 
                 var serverData = await client.GetChanges (null).ConfigureAwait (false);
 
-                var user = await store.ExecuteInTransactionAsync (ctx => serverData.User.Import (ctx));
+                await store.ExecuteInTransactionAsync (ctx => {
+                    var user = serverData.User.Import (ctx);
+                    var workspace = serverData.Workspaces.ElementAt (0).Import (ctx);
 
-                var workspace = store.ExecuteInTransactionAsync (ctx => serverData.Workspaces.ElementAt (0).Import (ctx));
+                    var workspaceId = Tuple.Create ("WorkspaceId", (object)workspace.Id);
+                    var userId = Tuple.Create ("UserId", (object)user.Id);
 
+                    //Lift data from the local objects to server objects
+                    SqlExtensions.UpdateTable<ProjectData> (ctx, workspaceId);
+                    SqlExtensions.UpdateTable<ClientData> (ctx, workspaceId);
+                    SqlExtensions.UpdateTable<TagData> (ctx, workspaceId);
+                    SqlExtensions.UpdateTable<TimeEntryData> (ctx, workspaceId, userId);
+                    SqlExtensions.UpdateTable<ProjectUserData> (ctx, userId);
 
-                //Lift data from the local objects to server objects
-                var prjTbl = await store.GetTableNameAsync<ProjectData>();
-                var cltTbl = await store.GetTableNameAsync<ClientData>();
-                var tagsTbl = await store.GetTableNameAsync<TagData>();
-                var teTbl = await store.GetTableNameAsync<TimeEntryData>();
-                var pudTbl = await store.GetTableNameAsync<ProjectUserData>();
+                    // Delete old data.
+                    SqlExtensions.DeleteTable<UserData> (ctx, Tuple.Create ("Name", (object)"Workspace"));
+                    SqlExtensions.DeleteTable<WorkspaceData> (ctx, Tuple.Create ("Name", (object)"offlineUser"));
+                });
 
-                await store.QueryAsync<ProjectData> (
-                    String.Concat ("UPDATE ", cltTbl, " SET WorkspaceId = ?")
-                    , workspace.Result.Id);
-                await store.QueryAsync<ProjectData> (
-                    String.Concat ("UPDATE ", prjTbl, " SET WorkspaceId = ?")
-                    , workspace.Result.Id);
-                await store.QueryAsync<TagData> (
-                    String.Concat ("UPDATE ", tagsTbl, " SET WorkspaceId = ?")
-                    , workspace.Result.Id);
-                await store.QueryAsync<TimeEntryData> (
-                    String.Concat ("UPDATE ", teTbl, " SET WorkspaceId = ?, UserId = ?")
-                    , workspace.Result.Id, user.Id);
-                await store.QueryAsync<ProjectUserData> (
-                    String.Concat ("UPDATE ", pudTbl, " SET UserId = ?")
-                    ,user.Id);
-
-
-                // Delete old data.
-                var usrTbl = await store.GetTableNameAsync<UserData>();
-                var wsTbl = await store.GetTableNameAsync<WorkspaceData>();
-                await store.QueryAsync<WorkspaceData> (String.Concat ("DELETE FROM ", wsTbl ," WHERE Name='Workspace'"), workspace.Result.Id );
-                await store.QueryAsync<WorkspaceData> (String.Concat ("DELETE FROM ", usrTbl ," WHERE Name='offlineUser'"), workspace.Result.Id );
             } catch (Exception e) {
                 if (e.IsNetworkFailure () || e is TaskCanceledException) {
                     if (e.IsNetworkFailure ()) {
