@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Accounts;
@@ -101,15 +102,10 @@ namespace Toggl.Joey.UI.Fragments
 
         private void SyncRegisterButton ()
         {
-            var enabled = !isAuthenticating;
-
-            if (String.IsNullOrWhiteSpace (EmailEditText.Text) || !EmailEditText.Text.Contains ('@')) {
-                enabled = false;
-            } else if (String.IsNullOrWhiteSpace (PasswordEditText.Text) || PasswordEditText.Text.Length < 6) {
-                enabled = false;
-            }
-
-            RegisterButton.Enabled = enabled;
+            RegisterButton.Enabled =
+                !isAuthenticating &&
+                Regex.IsMatch (EmailEditText.Text ?? "", LoginActivity.ValidateEmailRegexp) &&
+                (PasswordEditText.Text ?? "").Length >= 6;
         }
 
         private void SyncPasswordVisibility ()

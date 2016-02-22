@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Accounts;
@@ -36,6 +37,7 @@ namespace Toggl.Joey.UI.Activities
     public class LoginActivity : BaseActivity, ViewTreeObserver.IOnGlobalLayoutListener
     {
         private const string LogTag = "LoginActivity";
+        public static string ValidateEmailRegexp = "^[^<>\\\\#$@\\s]+@[^<>\\\\#$@\\s]*[^<>\\\\#$\\.\\s@]{1}?\\.{1}?[^<>\\\\#$\\.@\\s]{1}?[^<>\\\\#$@\\s]+$";
 
         private static readonly string ExtraShowPassword = "com.toggl.timer.show_password";
         private Mode? lastScreen;
@@ -211,16 +213,10 @@ namespace Toggl.Joey.UI.Activities
 
         private void SyncLoginButton ()
         {
-            var enabled = !isAuthenticating;
-            if (CurrentMode == Mode.Signup) {
-                if (String.IsNullOrWhiteSpace (EmailEditText.Text) || !EmailEditText.Text.Contains ('@')) {
-                    enabled = false;
-                } else if (String.IsNullOrWhiteSpace (PasswordEditText.Text) || PasswordEditText.Text.Length < 6) {
-                    enabled = false;
-                }
-            }
-
-            LoginButton.Enabled = enabled;
+            LoginButton.Enabled =
+                !isAuthenticating &&
+                Regex.IsMatch (EmailEditText.Text ?? "", LoginActivity.ValidateEmailRegexp) &&
+                (PasswordEditText.Text ?? "").Length >= 6;
         }
 
         private void SyncPasswordVisibility ()
