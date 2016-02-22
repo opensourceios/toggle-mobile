@@ -754,7 +754,7 @@
     <AndroidResource Include="Resources\drawable-mdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_delete_white_24dp.png" />
-    <AndroidResource Include="Resources\layout\CreateUserFragment.axml" />
+    <AndroidResource Include="Resources\layout\RegisterUserFragment.axml" />
     <AndroidResource Include="Resources\layout\IntroLayout.axml" />
     <AndroidResource Include="Resources\drawable-hdpi\img_reports.png" />
     <AndroidResource Include="Resources\drawable-mdpi\img_reports.png" />
@@ -784,7 +784,6 @@
     <AndroidResource Include="Resources\drawable-mdpi\arrow_step_1.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\arrow_step_1.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\arrow_step_1.png" />
-    <AndroidResource Include="Resources\layout\RegisterUserFragment.axml" />
     <AndroidResource Include="Resources\drawable\BlackCursor.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

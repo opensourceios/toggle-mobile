@@ -206,15 +206,14 @@ namespace Toggl.Joey.UI.Fragments
 
             // If project list needs to be opened?
             var settingsStore = ServiceContainer.Resolve<SettingsStore> ();
-            if (settingsStore.ChooseProjectForNew && LogTimeEntriesListFragment.NewTimeEntryStartedByFAB) {
-                LogTimeEntriesListFragment.NewTimeEntryStartedByFAB = false;
+            if (settingsStore.ChooseProjectForNew && LogTimeEntriesListFragment.NewTimeEntry) {
+                LogTimeEntriesListFragment.NewTimeEntry = false;
                 OpenProjectListActivity ();
             }
 
-            if (!settingsStore.FirstTimeEntryFocus) {
+            if (LogTimeEntriesListFragment.NewTimeEntry) {
                 DescriptionField.RequestFocus ();
                 ((EditTimeEntryActivity)Activity).ShowSoftKeyboard (DescriptionField.TextField, false);
-                settingsStore.FirstTimeEntryFocus = true;
             }
         }
 

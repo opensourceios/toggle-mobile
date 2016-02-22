@@ -33,7 +33,7 @@ namespace Toggl.Joey.UI.Fragments
         ItemTouchListener.IItemTouchListener,
         SwipeRefreshLayout.IOnRefreshListener
     {
-        public static bool NewTimeEntryStartedByFAB;
+        public static bool NewTimeEntry;
 
         private RecyclerView recyclerView;
         private SwipeRefreshLayout swipeLayout;
@@ -90,7 +90,7 @@ namespace Toggl.Joey.UI.Fragments
 
             var settingsStore = ServiceContainer.Resolve<SettingsStore> ();
             var authManager = ServiceContainer.Resolve<AuthManager> ();
-            if (settingsStore.GotWelcomeMessage || !authManager.OfflineMode) {
+            if (settingsStore.ShowOverlay || !authManager.OfflineMode) {
                 layoverView.Visibility = ViewStates.Gone;
             }
 
@@ -100,7 +100,7 @@ namespace Toggl.Joey.UI.Fragments
         private void OnAllrightButtonClicked (object sender, EventArgs e)
         {
             var settingsStore = ServiceContainer.Resolve<SettingsStore> ();
-            settingsStore.GotWelcomeMessage = true;
+            settingsStore.ShowOverlay = true;
             layoverView.Visibility = ViewStates.Gone;
         }
 
@@ -156,7 +156,8 @@ namespace Toggl.Joey.UI.Fragments
 
             var timeEntryData = await ViewModel.StartStopTimeEntry ();
             if (timeEntryData.State == TimeEntryState.Running) {
-                NewTimeEntryStartedByFAB = true;
+                NewTimeEntry = true;
+
                 var ids = new List<string> { timeEntryData.Id.ToString () };
                 var intent = new Intent (Activity, typeof (EditTimeEntryActivity));
                 intent.PutStringArrayListExtra (EditTimeEntryActivity.ExtraGroupedTimeEntriesGuids, ids);
@@ -195,8 +196,13 @@ namespace Toggl.Joey.UI.Fragments
             } else if (!ViewModel.HasMoreItems && !ViewModel.HasLoadErrors) {
                 if (ViewModel.HasItems) {
                     logAdapter.SetFooterState (RecyclerCollectionDataAdapter<IHolder>.RecyclerLoadState.Finished);
+                    if (layoverView.Visibility == ViewStates.Visible) {
+                        layoverView.Visibility = ViewStates.Gone;
+                        ServiceContainer.Resolve<SettingsStore> ().ShowOverlay = true;
+                    }
                 } else {
                     View emptyView = emptyMessageView;
+
                     // According to settings, show welcome message or no.
                     welcomeMessage.Visibility = ServiceContainer.Resolve<ISettingsStore> ().ShowWelcome ? ViewStates.Visible : ViewStates.Gone;
                     noItemsMessage.Visibility = ServiceContainer.Resolve<ISettingsStore> ().ShowWelcome ? ViewStates.Gone : ViewStates.Visible;
@@ -207,6 +213,14 @@ namespace Toggl.Joey.UI.Fragments
                 }
             }
             recyclerView.Visibility = ViewModel.HasItems ? ViewStates.Visible : ViewStates.Gone;
+//
+//            if (ViewModel.HasItems && layoverView.Visibility == ViewStates.Visible) { // if the app had entries before and updated.
+//                var settingsStore = ServiceContainer.Resolve<SettingsStore> ();
+//                if (!settingsStore.ShowOverlay) {
+//                    layoverView.Visibility = ViewStates.Gone;
+//                    settingsStore.ShowOverlay = true;
+//                }
+//            }
         }
 
         #region Menu setup
@@ -219,6 +233,7 @@ namespace Toggl.Joey.UI.Fragments
 
         public override bool OnOptionsItemSelected (IMenuItem item)
         {
+            NewTimeEntry = true;
             var i = new Intent (Activity, typeof (EditTimeEntryActivity));
             i.PutStringArrayListExtra (EditTimeEntryActivity.ExtraGroupedTimeEntriesGuids, new List<string> { ViewModel.GetActiveTimeEntry ().Id.ToString ()});
             Activity.StartActivity (i);
@@ -251,6 +266,7 @@ namespace Toggl.Joey.UI.Fragments
             if (undoAdapter.IsUndo (position)) {
                 return;
             }
+            NewTimeEntry = false;
 
             var intent = new Intent (Activity, typeof (EditTimeEntryActivity));
             IList<string> guids = ((ITimeEntryHolder)ViewModel.Collection.ElementAt (position)).Guids;
