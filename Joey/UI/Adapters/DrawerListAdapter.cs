@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Android.Views;
 using Android.Widget;
 using Toggl.Joey.UI.Utils;
@@ -123,24 +124,13 @@ namespace Toggl.Joey.UI.Adapters
 
         private List<DrawerItem> FilterVisible (List<DrawerItem> list)
         {
-            var newList = new List<DrawerItem> ();
-            foreach (var item in list) {
-                if (item.VMode == VisibilityMode.Normal && authManager.OfflineMode || item.VMode == VisibilityMode.Offline && !authManager.OfflineMode) {
-                    continue;
-                }
-                newList.Add (item);
-                if (item.SubItems != null) {
-                    var subItems = new List<DrawerItem> ();
-                    foreach (var sub in item.SubItems) {
-                        if (sub.VMode == VisibilityMode.Normal && authManager.OfflineMode || sub.VMode == VisibilityMode.Offline && !authManager.OfflineMode) {
-                            continue;
-                        }
-                        subItems.Add (sub);
-                    }
-                    item.SubItems = subItems.Count > 0 ? subItems : null;
-                }
-            }
-            return newList;
+            Func<DrawerItem, bool> filter = item =>
+                                            ! (item.VMode == VisibilityMode.Normal && authManager.OfflineMode) &&
+                                            ! (item.VMode == VisibilityMode.Offline && !authManager.OfflineMode);
+
+            return list.Where (filter)
+                   .Select (item => item.With (item.SubItems.Where (filter).ToList ()))
+                   .ToList ();
         }
 
         public override View GetView (int position, View convertView, ViewGroup parent)
@@ -198,24 +188,21 @@ namespace Toggl.Joey.UI.Adapters
             return GetDrawerItem (position).Id;
         }
 
-        public void ExpandCollapse (int position)
+        public void ExpandCollapse (int id)
         {
             rowItems = FilterVisible (collapsedRowItems);
 
-            if (collapsedRowItems [position].SubItems == null) {
-                return;
-            }
-            if (rowItems [position].SubItems.Count > 0) {
+            var item = rowItems.Where (i => i.Id == id).FirstOrDefault();
+
+            if (item.SubItems.Any()) {
+
                 var newList = new List<DrawerItem> ();
-                int pos = 0;
                 foreach (var row in rowItems) {
                     newList.Add (row);
-                    if (pos == position) {
-                        foreach (var sub in rowItems[position].SubItems) {
-                            newList.Add (sub);
-                        }
+
+                    if (row.Equals (item)) {
+                        newList.AddRange (item.SubItems);
                     }
-                    pos++;
                 }
                 rowItems = newList;
             }
@@ -236,7 +223,21 @@ namespace Toggl.Joey.UI.Adapters
             public bool IsEnabled;
             public bool Expanded = false;
             public VisibilityMode VMode = VisibilityMode.Both;
-            public List<DrawerItem> SubItems;
+            public List<DrawerItem> SubItems = new List<DrawerItem> ();
+
+            public DrawerItem With (List<DrawerItem> subItems)
+            {
+                return new DrawerItem {
+                    Id = this.Id,
+                    TextResId = this.TextResId,
+                    ImageResId = this.ImageResId,
+                    ChildOf = this.ChildOf,
+                    IsEnabled = this.IsEnabled,
+                    Expanded = this.Expanded,
+                    VMode = this.VMode,
+                    SubItems = subItems,
+                };
+            }
         }
 
         private class DrawerItemViewHolder : BindableViewHolder<DrawerItem>

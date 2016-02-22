@@ -262,7 +262,6 @@ namespace Toggl.Joey.UI.Activities
 
         public void ForgetCurrentUser ()
         {
-            var authManager = ServiceContainer.Resolve<AuthManager> ();
             authManager.Forget ();
             StartAuthActivity ();
         }
