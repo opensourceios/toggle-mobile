@@ -254,6 +254,6 @@
     <string name="RegisterSuccessListHeading">With your new account you can:</string>
     <string name="RegisterSuccessListItem1">See your time in reports</string>
     <string name="RegisterSuccessListItem2">Track together with your team</string>
-    <string name="RegisterSuccessListItem3">Analyze your data in depth in Toggl web</string>
+    <string name="RegisterSuccessListItem3">Analyze your data in depth \nin Toggl web</string>
     <string name="RegisterSuccessButton">Go to timer</string>
 </resources>
