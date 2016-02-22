@@ -76,6 +76,7 @@ namespace Toggl.Joey.UI.Fragments
             welcomeMessage = view.FindViewById<TextView> (Resource.Id.WelcomeTextView);
             noItemsMessage = view.FindViewById<TextView> (Resource.Id.EmptyTitleTextView);
             layoverView = view.FindViewById<View> (Resource.Id.LayoverView);
+            layoverView.Click += (sender, e) => { };
             layoverDismissButton = view.FindViewById<Button> (Resource.Id.LayoverButton);
             layoverDismissButton.Click += OnAllrightButtonClicked;
             recyclerView = view.FindViewById<RecyclerView> (Resource.Id.LogRecyclerView);
