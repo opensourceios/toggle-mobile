@@ -213,10 +213,12 @@ namespace Toggl.Joey.UI.Activities
 
         private void SyncLoginButton ()
         {
-            LoginButton.Enabled =
-                !isAuthenticating &&
-                Regex.IsMatch (EmailEditText.Text ?? "", LoginActivity.ValidateEmailRegexp) &&
-                (PasswordEditText.Text ?? "").Length >= 6;
+            if (CurrentMode == Mode.Signup) {
+                LoginButton.Enabled =
+                    !isAuthenticating &&
+                    Regex.IsMatch (EmailEditText.Text ?? "", LoginActivity.ValidateEmailRegexp) &&
+                    (PasswordEditText.Text ?? "").Length >= 6;
+            }
         }
 
         private void SyncPasswordVisibility ()
