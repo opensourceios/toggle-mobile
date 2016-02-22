@@ -65,13 +65,10 @@ namespace Toggl.Joey.UI.Activities
             }
         }
 
-        public void ShowSoftKeyboard (View input, bool selectText)
+        public async void ShowSoftKeyboard (View input, bool selectText)
         {
-            if (selectText) { ((EditText)input).SelectAll(); }
-            ThreadPool.QueueUserWorkItem (s => {
-                Thread.Sleep (100); // For some reason, a short delay is required here.
-                RunOnUiThread (() => ((InputMethodManager)GetSystemService (InputMethodService)).ShowSoftInput (input, ShowFlags.Implicit));
-            });
+            await System.Threading.Tasks.Task.Delay (100);
+            ((InputMethodManager)GetSystemService (InputMethodService)).ShowSoftInput (input, ShowFlags.Implicit);
         }
     }
 }
