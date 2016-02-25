@@ -15,10 +15,12 @@ using Android.Text.Style;
 using Android.Views;
 using Android.Views.Animations;
 using Android.Widget;
+using GalaSoft.MvvmLight.Helpers;
 using Toggl.Joey.UI.Activities;
 using Toggl.Joey.UI.Utils;
 using Toggl.Joey.UI.Views;
 using Toggl.Phoebe.Analytics;
+using Toggl.Phoebe.Data.ViewModels;
 using Toggl.Phoebe.Logging;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
@@ -44,10 +46,14 @@ namespace Toggl.Joey.UI.Fragments
         private Button SuccessTimerButton;
         private TextView LegalTextView;
 
-        private bool isAuthenticating;
+        public bool IsRegistering { get; private set; }
         private bool showPassword;
         private ISpannable formattedLegalText;
         private bool hasGoogleAccounts;
+
+        private Binding<bool, bool> isRegisteringBinding, registerBinding, isSuccessfulBinding;
+
+        public RegisterUserViewModel ViewModel { get; private set;}
 
         private void FindViews (View v)
         {
@@ -79,13 +85,52 @@ namespace Toggl.Joey.UI.Fragments
 
             EmailEditText.TextChanged += OnEmailEditTextTextChanged;
             PasswordEditText.TextChanged += OnPasswordEditTextTextChanged;
+            PasswordToggleButton.Click += OnPasswordToggleButtonClick;
+            RegisterButton.Click += OnRegisterButtonClick;
             GoogleRegisterButton.Click += OnGoogleRegisterButtonClick;
             SuccessTimerButton.Click += GoToTimerButtonClick;
-            RegisterButton.Click += OnRegisterButtonClick;
-            PasswordToggleButton.Click += OnPasswordToggleButtonClick;
 
             SyncRegisterButton ();
             return view;
+        }
+
+        public override void OnViewCreated (View view, Bundle savedInstanceState)
+        {
+            base.OnViewCreated (view, savedInstanceState);
+
+            ViewModel = RegisterUserViewModel.Init ();
+
+            registerBinding = this.SetBinding (() => ViewModel.IsRegistering, () => IsRegistering);
+            isRegisteringBinding = this.SetBinding (() => ViewModel.IsRegistering).WhenSourceChanges (SyncLoadingState);
+            isSuccessfulBinding = this.SetBinding (()=> ViewModel.IsSuccesful).WhenSourceChanges (SyncSuccessScreen);
+        }
+
+        private async void OnRegisterButtonClick (object sender, EventArgs e)
+        {
+            if (IsRegistering) {
+                return;
+            }
+
+            var authRes = await ViewModel.TrySignupPasswordAsync (EmailEditText.Text, PasswordEditText.Text);
+            if (authRes != AuthResult.Success) {
+                EmailEditText.RequestFocus ();
+                ShowAuthError (EmailEditText.Text, authRes);
+            }
+        }
+
+        private void SyncLoadingState ()
+        {
+            RegisterButton.Text = ViewModel.IsRegistering ? String.Empty : Activity.Resources.GetString (Resource.String.CreateUserButtonText);
+            SpinningImage.ImageAlpha = ViewModel.IsRegistering ? 255 : 0;
+            EmailEditText.Enabled = !ViewModel.IsRegistering;
+            PasswordEditText.Enabled = !ViewModel.IsRegistering;
+            GoogleRegisterButton.Enabled = !ViewModel.IsRegistering;
+        }
+
+        private void SyncSuccessScreen ()
+        {
+            RegisterSuccessLayout.Visibility = ViewModel.IsSuccesful ? ViewStates.Visible : ViewStates.Gone;
+            RegisterFormLayout.Visibility = ViewModel.IsSuccesful ? ViewStates.Gone : ViewStates.Visible;
         }
 
         public override void OnCreate (Bundle state)
@@ -103,9 +148,45 @@ namespace Toggl.Joey.UI.Fragments
         private void SyncRegisterButton ()
         {
             RegisterButton.Enabled =
-                !isAuthenticating &&
+                !IsRegistering &&
                 Regex.IsMatch (EmailEditText.Text ?? "", LoginActivity.ValidateEmailRegexp) &&
                 (PasswordEditText.Text ?? "").Length >= 6;
+        }
+
+        private void OnEmailEditTextTextChanged (object sender, TextChangedEventArgs e)
+        {
+            SyncRegisterButton ();
+        }
+
+        private void OnPasswordEditTextTextChanged (object sender, TextChangedEventArgs e)
+        {
+            SyncPasswordVisibility ();
+            SyncRegisterButton ();
+        }
+
+        private void OnPasswordToggleButtonClick (object sender, EventArgs e)
+        {
+            showPassword = !showPassword;
+            SyncPasswordVisibility ();
+        }
+
+        private void OnGoogleRegisterButtonClick (object sender, EventArgs e)
+        {
+            var accounts = GoogleAccounts;
+            if (accounts.Count == 1) {
+                GoogleAuthFragment.Start (FragmentManager, accounts [0], ViewModel);
+            } else if (accounts.Count > 1) {
+                var dia = new GoogleAccountSelectionDialogFragment (ViewModel);
+                dia.Show (FragmentManager, "accounts_dialog");
+            }
+        }
+
+        private void GoToTimerButtonClick (object sender, EventArgs e)
+        {
+            var intent = new Intent (Activity, typeof (MainDrawerActivity));
+            intent.AddFlags (ActivityFlags.ClearTop);
+            StartActivity (intent);
+            Activity.Finish ();
         }
 
         private void SyncPasswordVisibility ()
@@ -142,33 +223,18 @@ namespace Toggl.Joey.UI.Fragments
             }
         }
 
-        private void OnEmailEditTextTextChanged (object sender, TextChangedEventArgs e)
-        {
-            SyncRegisterButton ();
-        }
 
-        private void OnPasswordEditTextTextChanged (object sender, TextChangedEventArgs e)
-        {
-            SyncPasswordVisibility ();
-            SyncRegisterButton ();
-        }
 
-        private void OnPasswordToggleButtonClick (object sender, EventArgs e)
+        private void ShowAuthError (string email, AuthResult res, bool googleAuth=false)
         {
-            showPassword = !showPassword;
-            SyncPasswordVisibility ();
-        }
+            var dia = new ErrorDialogFragment (res);
 
-        private void OnGoogleRegisterButtonClick (object sender, EventArgs e)
-        {
-            var accounts = GoogleAccounts;
-            if (accounts.Count == 1) {
-                GoogleAuthFragment.Start (FragmentManager, accounts [0]);
-            } else if (accounts.Count > 1) {
-                var dia = new GoogleAccountSelectionDialogFragment ();
-                dia.Show (FragmentManager, "accounts_dialog");
+            if (dia != null) {
+                dia.Show (FragmentManager, "auth_result_dialog");
             }
         }
+
+        #region Google login code
 
         private List<string> GoogleAccounts
         {
@@ -182,103 +248,6 @@ namespace Toggl.Joey.UI.Fragments
             }
         }
 
-        private bool IsAuthenticating
-        {
-            get {
-                return isAuthenticating;
-            } set {
-                if (isAuthenticating == value) {
-                    return;
-                }
-                isAuthenticating = value;
-                SyncContent ();
-            }
-        }
-
-        private void SyncContent ()
-        {
-            // Views not loaded yet/anymore?
-            if (RegisterButton == null) {
-                return;
-            }
-
-            EmailEditText.Enabled = !isAuthenticating;
-            PasswordEditText.Enabled = !isAuthenticating;
-            GoogleRegisterButton.Enabled = !isAuthenticating;
-
-            SyncRegisterButton ();
-        }
-
-        private async void OnRegisterButtonClick (object sender, EventArgs e)
-        {
-            RegisterButton.Text = String.Empty;
-            SpinningImage.ImageAlpha = 255;
-
-            await TrySignupPasswordAsync ();
-            RegisterButton.SetText (Resource.String.CreateUserButtonText);
-            SpinningImage.ImageAlpha = 0;
-        }
-
-        private void GoToTimerButtonClick (object sender, EventArgs e)
-        {
-            var intent = new Intent (Activity, typeof (MainDrawerActivity));
-            intent.AddFlags (ActivityFlags.ClearTop);
-            StartActivity (intent);
-            Activity.Finish ();
-        }
-
-        private async Task TrySignupPasswordAsync ()
-        {
-            if (IsAuthenticating) {
-                return;
-            }
-
-            IsAuthenticating = true;
-            var authManager = ServiceContainer.Resolve<AuthManager> ();
-            AuthResult authRes;
-            try {
-                authRes = await authManager.RegisterNoUserEmailAsync (EmailEditText.Text, PasswordEditText.Text);
-            } catch (InvalidOperationException ex) {
-                var log = ServiceContainer.Resolve<ILogger> ();
-                log.Info (LogTag, ex, "Failed to signup user with password.");
-                return;
-            } finally {
-                IsAuthenticating = false;
-            }
-            if (authRes != AuthResult.Success) {
-                EmailEditText.RequestFocus ();
-                ShowAuthError (EmailEditText.Text, authRes);
-            } else {
-                ServiceContainer.Resolve<ISyncManager> ().RunUpload ();
-                RegisterSuccessLayout.Visibility = ViewStates.Visible;
-                RegisterFormLayout.Visibility = ViewStates.Gone;
-            }
-        }
-
-        private void ShowAuthError (string email, AuthResult res, bool googleAuth=false)
-        {
-            DialogFragment dia = null;
-
-            switch (res) {
-            case AuthResult.InvalidCredentials:
-                if (!googleAuth) {
-                    dia = new SignupFailedDialogFragment ();
-                }
-                break;
-            case AuthResult.NetworkError:
-                dia = new NetworkErrorDialogFragment ();
-                break;
-            default:
-                dia = new SystemErrorDialogFragment ();
-                break;
-            }
-
-            if (dia != null) {
-                dia.Show (FragmentManager, "auth_result_dialog");
-            }
-        }
-
-        //Google login section
         public class GoogleAuthFragment : Fragment
         {
             private static readonly int GoogleAuthRequestCode = 1;
@@ -287,7 +256,9 @@ namespace Toggl.Joey.UI.Fragments
                 "https://www.googleapis.com/auth/userinfo.email";
             private static readonly string EmailArgument = "com.toggl.timer.email";
 
-            public static void Start (FragmentManager mgr, string email)
+            private static RegisterUserViewModel viewModel;
+
+            public static void Start (FragmentManager mgr, string email, RegisterUserViewModel vm)
             {
                 // Find old fragment to replace
                 var frag = mgr.FindFragmentByTag ("google_auth");
@@ -298,6 +269,8 @@ namespace Toggl.Joey.UI.Fragments
                         return;
                     }
                 }
+
+                viewModel = vm;
 
                 var tx = mgr.BeginTransaction ();
                 if (frag != null) {
@@ -386,11 +359,11 @@ namespace Toggl.Joey.UI.Fragments
                     }
 
                     try {
-                        var authRes = await authManager.RegisterNoUserGoogleAsync (token);
+                        var authRes = await viewModel.TrySignupGoogleAsync (token);
 
                         if (authRes != AuthResult.Success) {
                             ClearGoogleToken (ctx, token);
-                            var dia = new SignupFailedDialogFragment ();
+                            var dia = new ErrorDialogFragment (authRes);
                             dia.Show (FragmentManager, "auth_result_dialog");
                         }
 
@@ -431,9 +404,16 @@ namespace Toggl.Joey.UI.Fragments
             private bool IsAuthenticating { get; set; }
         }
 
+
         public class GoogleAccountSelectionDialogFragment : DialogFragment
         {
             private ArrayAdapter<string> accountsAdapter;
+
+            private RegisterUserViewModel viewModel;
+            public GoogleAccountSelectionDialogFragment (RegisterUserViewModel vm)
+            {
+                viewModel = vm;
+            }
 
             public override Dialog OnCreateDialog (Bundle savedInstanceState)
             {
@@ -449,7 +429,7 @@ namespace Toggl.Joey.UI.Fragments
             private void OnAccountSelected (object sender, DialogClickEventArgs args)
             {
                 var email = accountsAdapter.GetItem (args.Which);
-                GoogleAuthFragment.Start (FragmentManager, email);
+                GoogleAuthFragment.Start (FragmentManager, email, viewModel);
             }
 
             private void OnCancelButtonClicked (object sender, DialogClickEventArgs args)
@@ -469,78 +449,41 @@ namespace Toggl.Joey.UI.Fragments
             }
         }
 
-        public class InvalidCredentialsDialogFragment : DialogFragment
+        #endregion
+
+        public class ErrorDialogFragment : DialogFragment
         {
+            private int title;
+            private int message;
+            private int buttonText;
+
+            public ErrorDialogFragment (AuthResult e)
+            {
+                switch (e) {
+                case AuthResult.InvalidCredentials:
+                    title = Resource.String.LoginSignupFailedDialogTitle;
+                    message = Resource.String.LoginSignupFailedDialogText;
+                    buttonText =Resource.String.LoginSignupFailedDialogOk;
+                    break;
+                case AuthResult.NetworkError:
+                    title = Resource.String.LoginNetworkErrorDialogTitle;
+                    message = Resource.String.LoginNetworkErrorDialogText;
+                    buttonText =Resource.String.LoginNetworkErrorDialogOk;
+                    break;
+                default:
+                    title = Resource.String.LoginSystemErrorDialogTitle;
+                    message = Resource.String.LoginSystemErrorDialogText;
+                    buttonText =Resource.String.LoginSystemErrorDialogOk;
+                    break;
+                }
+            }
+
             public override Dialog OnCreateDialog (Bundle savedInstanceState)
             {
                 return new AlertDialog.Builder (Activity)
-                       .SetTitle (Resource.String.LoginInvalidCredentialsDialogTitle)
-                       .SetMessage (Resource.String.LoginInvalidCredentialsDialogText)
-                       .SetPositiveButton (Resource.String.LoginInvalidCredentialsDialogOk, OnOkButtonClicked)
-                       .Create ();
-            }
-
-            private void OnOkButtonClicked (object sender, DialogClickEventArgs args)
-            {
-            }
-        }
-
-        public class SignupFailedDialogFragment : DialogFragment
-        {
-            public override Dialog OnCreateDialog (Bundle savedInstanceState)
-            {
-                return new AlertDialog.Builder (Activity)
-                       .SetTitle (Resource.String.LoginSignupFailedDialogTitle)
-                       .SetMessage (Resource.String.LoginSignupFailedDialogText)
-                       .SetPositiveButton (Resource.String.LoginSignupFailedDialogOk, OnOkButtonClicked)
-                       .Create ();
-            }
-
-            private void OnOkButtonClicked (object sender, DialogClickEventArgs args)
-            {
-            }
-        }
-
-        public class NoAccountDialogFragment : DialogFragment
-        {
-            public override Dialog OnCreateDialog (Bundle savedInstanceState)
-            {
-                return new AlertDialog.Builder (Activity)
-                       .SetTitle (Resource.String.LoginNoAccountDialogTitle)
-                       .SetMessage (Resource.String.LoginNoAccountDialogText)
-                       .SetPositiveButton (Resource.String.LoginNoAccountDialogOk, OnOkButtonClicked)
-                       .Create ();
-            }
-
-            private void OnOkButtonClicked (object sender, DialogClickEventArgs args)
-            {
-            }
-        }
-
-        public class NetworkErrorDialogFragment : DialogFragment
-        {
-            public override Dialog OnCreateDialog (Bundle savedInstanceState)
-            {
-                return new AlertDialog.Builder (Activity)
-                       .SetTitle (Resource.String.LoginNetworkErrorDialogTitle)
-                       .SetMessage (Resource.String.LoginNetworkErrorDialogText)
-                       .SetPositiveButton (Resource.String.LoginNetworkErrorDialogOk, OnOkButtonClicked)
-                       .Create ();
-            }
-
-            private void OnOkButtonClicked (object sender, DialogClickEventArgs args)
-            {
-            }
-        }
-
-        public class SystemErrorDialogFragment : DialogFragment
-        {
-            public override Dialog OnCreateDialog (Bundle savedInstanceState)
-            {
-                return new AlertDialog.Builder (Activity)
-                       .SetTitle (Resource.String.LoginSystemErrorDialogTitle)
-                       .SetMessage (Resource.String.LoginSystemErrorDialogText)
-                       .SetPositiveButton (Resource.String.LoginSystemErrorDialogOk, OnOkButtonClicked)
+                       .SetTitle (title)
+                       .SetMessage (message)
+                       .SetPositiveButton (buttonText, OnOkButtonClicked)
                        .Create ();
             }
 
