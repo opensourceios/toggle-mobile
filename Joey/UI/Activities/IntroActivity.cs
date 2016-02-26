@@ -9,8 +9,10 @@ using Android.Support.V4.App;
 using Android.Support.V4.View;
 using Android.Views;
 using Android.Widget;
+using GalaSoft.MvvmLight.Helpers;
 using Toggl.Joey.UI.Utils;
 using Toggl.Joey.UI.Views;
+using Toggl.Phoebe.Data.ViewModels;
 using Toggl.Phoebe.Logging;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
@@ -30,21 +32,25 @@ namespace Toggl.Joey.UI.Activities
 
         private Button LoginButton;
         private Button StartNowButton;
-        private TextView LoginIntroText;
-        private TextView IntroText;
 
+        private Binding<bool, bool> isAuthenticatedBinding;
+
+        public IntroViewModel ViewModel { get; private set; }
 
         protected override void OnCreateActivity (Bundle state)
         {
             base.OnCreateActivity (state);
 
             SetContentView (Resource.Layout.IntroLayout);
-            IntroText = FindViewById<TextView> (Resource.Id.IntroTitle).SetFont (Font.DINMedium);
+            FindViewById<TextView> (Resource.Id.IntroTitle).SetFont (Font.DINMedium);
+            FindViewById<TextView> (Resource.Id.IntroLoginText).SetFont (Font.DINMedium);
             LoginButton = FindViewById<Button> (Resource.Id.LoginButton).SetFont (Font.DINMedium);
-            LoginIntroText = FindViewById<TextView> (Resource.Id.IntroLoginText).SetFont (Font.DINMedium);
             StartNowButton = FindViewById<Button> (Resource.Id.StartNowButton).SetFont (Font.DINMedium);
             LoginButton.Click += LoginButtonClick;
             StartNowButton.Click += StartNowButtonClick;
+
+            ViewModel = IntroViewModel.Init ();
+            isAuthenticatedBinding = this.SetBinding (() => ViewModel.IsAuthenticated).WhenSourceChanges (StartAuth);
         }
 
         private void LoginButtonClick (object sender, EventArgs e)
@@ -54,39 +60,27 @@ namespace Toggl.Joey.UI.Activities
 
         private async void StartNowButtonClick (object sender, EventArgs e)
         {
-            await SetUpNoUserAccountAsync ();
+            await ViewModel.SetUpNoUserAccountAsync ();
         }
 
-        private async Task SetUpNoUserAccountAsync ()
+        private void StartAuth ()
         {
-            var authManager = ServiceContainer.Resolve<AuthManager> ();
-            AuthResult authRes;
-            try {
-                authRes = await authManager.NoUserSetupAsync ();
-            } catch (InvalidOperationException ex) {
-                var log = ServiceContainer.Resolve<ILogger> ();
-                log.Info (LogTag, ex, "Failed to set up offline mode.");
-                return;
-            } finally {
-            }
-
             StartAuthActivity ();
         }
 
         protected override bool StartAuthActivity ()
         {
-            var authManager = ServiceContainer.Resolve<AuthManager> ();
-            if (authManager.IsAuthenticated) {
-                // Try to avoid flickering of buttons during activity transition by
-                // faking that we're still authenticating
+            if (ViewModel == null) {
+                return false;
+            }
 
+            if (ViewModel.IsAuthenticated) {
                 var intent = new Intent (this, typeof (MainDrawerActivity));
                 intent.AddFlags (ActivityFlags.ClearTop);
                 StartActivity (intent);
                 Finish ();
                 return true;
             }
-
             return false;
         }
     }
