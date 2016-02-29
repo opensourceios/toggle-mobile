@@ -91,6 +91,8 @@
     <Compile Include="Logging\**\*.cs" />
     <Compile Include="Data\StartStopMessage.cs" />
     <Compile Include="Data\ActiveTimeEntryManager.cs" />
+    <Compile Include="Data\ViewModels\IntroViewModel.cs" />
+    <Compile Include="Data\ViewModels\LoginViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Contrib\" />
