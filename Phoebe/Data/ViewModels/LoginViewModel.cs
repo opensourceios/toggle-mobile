@@ -47,13 +47,13 @@ namespace Toggl.Phoebe.Data.ViewModels
                 var log = ServiceContainer.Resolve<ILogger> ();
                 log.Info (LogTag, ex, "Failed to authenticate user with password.");
                 return AuthResult.SystemError;
-            } finally {
-                IsAuthenticating = false;
             }
 
             if (authRes == AuthResult.Success) {
                 IsAuthenticated = true;
+                ServiceContainer.Resolve<ISyncManager> ().Run ();
             }
+            IsAuthenticating = false;
             return authRes;
         }
 
@@ -68,18 +68,18 @@ namespace Toggl.Phoebe.Data.ViewModels
                 var log = ServiceContainer.Resolve<ILogger> ();
                 log.Info (LogTag, ex, "Failed to signup user with password.");
                 return AuthResult.SystemError;
-            } finally {
-                IsAuthenticating = false;
             }
+
             if (authRes == AuthResult.Success) {
                 IsAuthenticated = true;
+                ServiceContainer.Resolve<ISyncManager> ().Run ();
             }
+            IsAuthenticating = false;
             return authRes;
         }
 
         public async Task<AuthResult> TrySignupWithGoogleAsync (string token)
         {
-
             IsAuthenticating = true;
             var authManager = ServiceContainer.Resolve<AuthManager> ();
             AuthResult authRes;
@@ -89,13 +89,13 @@ namespace Toggl.Phoebe.Data.ViewModels
                 var log = ServiceContainer.Resolve<ILogger> ();
                 log.Info (LogTag, ex, "Failed to signup user with Google.");
                 return AuthResult.SystemError;
-            } finally {
-                IsAuthenticating = false;
             }
 
             if (authRes == AuthResult.Success) {
                 IsAuthenticated = true;
+                ServiceContainer.Resolve<ISyncManager> ().Run ();
             }
+            IsAuthenticating = false;
             return authRes;
         }
 
@@ -110,13 +110,12 @@ namespace Toggl.Phoebe.Data.ViewModels
                 var log = ServiceContainer.Resolve<ILogger> ();
                 log.Info (LogTag, ex, "Failed to login user with Google.");
                 return AuthResult.SystemError;
-            } finally {
-                IsAuthenticating = false;
             }
-
             if (authRes == AuthResult.Success) {
                 IsAuthenticated = true;
+                ServiceContainer.Resolve<ISyncManager> ().Run ();
             }
+            IsAuthenticating = false;
             return authRes;
         }
 
