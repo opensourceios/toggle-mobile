@@ -756,7 +756,7 @@ namespace Toggl.Joey.UI.Activities
             }
         }
 
-        private enum LoginError {
+        public enum LoginError {
             InvalidCredentials,
             SignupFailed,
             NoAccount,
