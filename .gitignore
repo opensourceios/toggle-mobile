@@ -18,3 +18,5 @@ local.properties
 packages
 Resource.designer.cs
 node_modules
+
+.bitrise*
