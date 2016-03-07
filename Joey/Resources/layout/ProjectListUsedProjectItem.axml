@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/white"
+    android:layout_width="match_parent"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginBottom="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:layout_height="56dp">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/play_button_background"
+        android:gravity="center_vertical">
+        <View
+            android:layout_width="3dp"
+            android:layout_height="match_parent"
+            android:id="@+id/ColorView" />
+        <toggl.joey.ui.views.FadeLinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="29dp"
+            android:layout_marginRight="15dp"
+            android:gravity="center_vertical"
+            app:fadeLength="15dp">
+            <TextView
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/ProjectTextView"
+                android:singleLine="true"
+                android:text="Project name"
+                android:ellipsize="none" />
+            <TextView
+                android:text="Client name"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/ClientTextView"
+                android:singleLine="true"
+                android:ellipsize="none"
+                android:textColor="@android:color/white"
+                android:alpha=".8"
+                android:layout_marginLeft="10dp" />
+        </toggl.joey.ui.views.FadeLinearLayout>
+        <ImageButton
+            android:id="@+id/TasksButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/TasksButtonBackground"
+            android:layout_gravity="center"
+            android:paddingRight="25dp"
+            android:paddingLeft="25dp"
+            android:background="@null" />
+    </LinearLayout>
+</RelativeLayout>

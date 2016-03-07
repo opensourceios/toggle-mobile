@@ -305,7 +305,6 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\IcTickBlue.png" />
     <AndroidResource Include="Resources\drawable\TickBlueBox.xml" />
     <AndroidResource Include="Resources\layout\ProjectListProjectItem.axml" />
-    <AndroidResource Include="Resources\layout\ProjectListWorkspaceItem.axml" />
     <AndroidResource Include="Resources\layout\ProjectListTaskItem.axml" />
     <AndroidResource Include="Resources\drawable-xhdpi\DividerHorizontalOpaque.9.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\DividerHorizontalOpaque.9.png" />
@@ -753,6 +752,8 @@
     <AndroidResource Include="Resources\drawable-mdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_delete_white_24dp.png" />
+    <AndroidResource Include="Resources\layout\ProjectListUsedProjectItem.axml" />
+    <AndroidResource Include="Resources\layout\ProjectListHeaderItem.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>

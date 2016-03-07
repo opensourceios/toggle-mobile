@@ -18,6 +18,8 @@ namespace Toggl.Joey.UI.Adapters
         protected const int ViewTypeProject = ViewTypeContent;
         protected const int ViewTypeClient = ViewTypeContent + 1;
         protected const int ViewTypeTask = ViewTypeContent + 2;
+        protected const int ViewTypeUsedProject = ViewTypeContent + 3;
+        protected const int ViewTypeHeading = ViewTypeContent + 4;
 
         protected ProjectsCollection collectionView;
         public Action<CommonData> HandleItemSelection { get; set; }
@@ -42,6 +44,14 @@ namespace Toggl.Joey.UI.Adapters
                 view = inflater.Inflate (Resource.Layout.ProjectListTaskItem, parent, false);
                 holder = new TaskItemHolder (this, view);
                 break;
+            case ViewTypeUsedProject:
+                view = inflater.Inflate (Resource.Layout.ProjectListUsedProjectItem, parent, false);
+                holder = new ProjectItemHolder (this, view);
+                break;
+            case ViewTypeHeading:
+                view = inflater.Inflate (Resource.Layout.ProjectListHeaderItem, parent, false);
+                holder = new HeaderHolder (view);
+                break;
             default:
                 view = inflater.Inflate (Resource.Layout.ProjectListProjectItem, parent, false);
                 holder = new ProjectItemHolder (this, view);
@@ -58,32 +68,46 @@ namespace Toggl.Joey.UI.Adapters
                 ((TaskItemHolder) holder).Bind ((TaskData)GetItem (position));
             } else if (viewType == ViewTypeClient) {
                 ((ClientItemHolder) holder).Bind (((ClientData)GetItem (position)).Name);
+            } else if (viewType == ViewTypeHeading) {
+                ((HeaderHolder) holder).Bind (((ProjectsCollection.Heading)GetItem (position)).Text);
             } else if (viewType == ViewTypeProject) {
                 var showClientName = collectionView.SortBy == ProjectsCollection.SortProjectsBy.Projects;
-                ((ProjectItemHolder) holder).Bind ((ProjectsCollection.SuperProjectData)GetItem (position), showClientName);
+                ((ProjectItemHolder) holder).Bind ((ProjectsCollection.CommonProjectData)GetItem (position), showClientName);
+            } else if (viewType == ViewTypeUsedProject) {
+                var showClientName = collectionView.SortBy == ProjectsCollection.SortProjectsBy.Projects;
+                ((ProjectItemHolder) holder).Bind ((ProjectsCollection.CommonProjectData)GetItem (position), showClientName);
             }
         }
 
-        public override int GetItemViewType (int position)
+        public override int GetItemViewType (int position) //TODO: refactor
         {
             var type = base.GetItemViewType (position);
 
-            if (type != ViewTypeLoaderPlaceholder) {
-                var dataObject = GetItem (position);
-
-                if (dataObject is ProjectsCollection.SuperProjectData) {
-                    type = ViewTypeProject;
-                }
-
-                if (dataObject is ClientData) {
-                    type = ViewTypeClient;
-                }
-
-                if (dataObject is TaskData) {
-                    type = ViewTypeTask;
-                }
+            if (type == ViewTypeLoaderPlaceholder) {
+                return type;
             }
 
+            var dataObject = GetItem (position);
+
+            if (dataObject is ProjectsCollection.Heading) {
+                return ViewTypeHeading;
+            }
+
+            if (dataObject is ProjectsCollection.UsedProjectData) {
+                return ViewTypeUsedProject;
+            }
+
+            if (dataObject is ProjectsCollection.SuperProjectData) {
+                return ViewTypeProject;
+            }
+
+            if (dataObject is ClientData) {
+                return ViewTypeClient;
+            }
+
+            if (dataObject is TaskData) {
+                return ViewTypeTask;
+            }
             return type;
         }
 
@@ -97,7 +121,7 @@ namespace Toggl.Joey.UI.Adapters
             protected ImageView TasksImageView { get; private set; }
 
             private ProjectListAdapter adapter;
-            private ProjectsCollection.SuperProjectData projectData;
+            private ProjectsCollection.CommonProjectData projectData;
 
             public ProjectItemHolder (ProjectListAdapter adapter, View root) : base (root)
             {
@@ -121,7 +145,7 @@ namespace Toggl.Joey.UI.Adapters
                 }
             }
 
-            public void Bind (ProjectsCollection.SuperProjectData projectData, bool showClient)
+            public void Bind (ProjectsCollection.CommonProjectData projectData, bool showClient)
             {
                 this.projectData = projectData;
 
@@ -177,7 +201,6 @@ namespace Toggl.Joey.UI.Adapters
             }
         }
 
-        [Shadow (ShadowAttribute.Mode.Top | ShadowAttribute.Mode.Bottom)]
         protected class ClientItemHolder : RecyclerView.ViewHolder
         {
             readonly TextView clientTextView;
@@ -185,6 +208,7 @@ namespace Toggl.Joey.UI.Adapters
             public ClientItemHolder (View root) : base (root)
             {
                 clientTextView = root.FindViewById<TextView> (Resource.Id.ClientTextView).SetFont (Font.RobotoMedium);
+
             }
 
             public void Bind (string name)
@@ -193,6 +217,25 @@ namespace Toggl.Joey.UI.Adapters
                     clientTextView.SetText (Resource.String.ProjectsNoClient);
                 } else {
                     clientTextView.Text = name;
+                }
+            }
+        }
+
+        protected class HeaderHolder : RecyclerView.ViewHolder
+        {
+            readonly TextView titleTextView;
+
+            public HeaderHolder (View root) : base (root)
+            {
+                titleTextView = root.FindViewById<TextView> (Resource.Id.HeaderTextView).SetFont (Font.RobotoMedium);
+            }
+
+            public void Bind (string text)
+            {
+                if (String.IsNullOrEmpty (text)) {
+                    titleTextView.SetText (Resource.String.ProjectsTop);
+                } else {
+                    titleTextView.Text = text;
                 }
             }
         }

@@ -88,6 +88,7 @@ namespace Toggl.Phoebe.Data
                         "WHERE entry.ProjectId != '" + Guid.Empty + "'",
                         "AND project.WorkspaceId != '" + Guid.Empty + "'",
                         "AND project.WorkspaceId IS NOT NULL ",
+                        "AND project.DeletedAt IS NULL AND project.IsActive != 0 ",
                         "GROUP BY entry.ProjectId ORDER BY COUNT(*) DESC"
                     );
             return await ds.QueryAsync<ProjectData> (q, userId);
