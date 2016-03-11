@@ -753,7 +753,7 @@
     <AndroidResource Include="Resources\drawable-xhdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_delete_white_24dp.png" />
     <AndroidResource Include="Resources\layout\ProjectListUsedProjectItem.axml" />
-    <AndroidResource Include="Resources\layout\ProjectListHeaderItem.axml" />
+    <AndroidResource Include="Resources\layout\ProjectListMostUsedList.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>

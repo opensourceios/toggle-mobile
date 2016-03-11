@@ -45,14 +45,16 @@
                 android:alpha=".8"
                 android:layout_marginLeft="10dp" />
         </toggl.joey.ui.views.FadeLinearLayout>
-        <ImageButton
+        <Button
             android:id="@+id/TasksButton"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:src="@drawable/TasksButtonBackground"
             android:layout_gravity="center"
             android:paddingRight="25dp"
             android:paddingLeft="25dp"
+            android:textColor="@android:color/background_dark"
+            android:textAllCaps="false"
+            android:text="3 tasks ⌃"
             android:background="@null" />
     </LinearLayout>
 </RelativeLayout>

@@ -18,6 +18,9 @@ using Activity = Android.Support.V7.App.AppCompatActivity;
 using Fragment = Android.Support.V4.App.Fragment;
 using SearchView = Android.Support.V7.Widget.SearchView;
 using Toolbar = Android.Support.V7.Widget.Toolbar;
+using System.Collections.Generic;
+using XPlatUtils;
+using Toggl.Joey.UI.Utils;
 
 namespace Toggl.Joey.UI.Fragments
 {
@@ -96,8 +99,9 @@ namespace Toggl.Joey.UI.Fragments
             base.OnViewCreated (view, savedInstanceState);
             viewModel = await ProjectListViewModel.Init (WorkspaceId);
 
-            var adapter = new ProjectListAdapter (recyclerView, viewModel.ProjectList);
+            var adapter = new ProjectListAdapter (recyclerView, viewModel);
             adapter.HandleItemSelection = OnItemSelected;
+
             recyclerView.SetAdapter (adapter);
 
             ConfigureUIViews ();
@@ -109,7 +113,7 @@ namespace Toggl.Joey.UI.Fragments
             // Set toolbar scrollable or not.
             var _params = new AppBarLayout.LayoutParams (toolBar.LayoutParameters);
 
-            if (viewModel.WorkspaceList.Any ()) {
+            if (viewModel.WorkspaceList.Any()) {
                 tabLayout.Visibility = ViewStates.Visible;
                 _params.ScrollFlags  = AppBarLayout.LayoutParams.ScrollFlagScroll | AppBarLayout.LayoutParams.ScrollFlagEnterAlways;
             } else {
@@ -153,7 +157,11 @@ namespace Toggl.Joey.UI.Fragments
             Guid taskId = Guid.Empty;
 
             if (m is ProjectData) {
-                if (! ((ProjectsCollection.CommonProjectData)m).IsEmpty) {
+                if (m is ProjectsCollection.SuperProjectData) {
+                    if (! ((ProjectsCollection.SuperProjectData)m).IsEmpty) {
+                        projectId = m.Id;
+                    }
+                } else {
                     projectId = m.Id;
                 }
             } else if (m is TaskData) {

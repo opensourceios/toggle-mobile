@@ -10,6 +10,8 @@ using Toggl.Phoebe.Data.DataObjects;
 using Toggl.Phoebe.Data.Models;
 using Toggl.Phoebe.Data.Views;
 using XPlatUtils;
+using System.Collections.Generic;
+using Toggl.Phoebe.Data.ViewModels;
 
 namespace Toggl.Joey.UI.Adapters
 {
@@ -18,15 +20,16 @@ namespace Toggl.Joey.UI.Adapters
         protected const int ViewTypeProject = ViewTypeContent;
         protected const int ViewTypeClient = ViewTypeContent + 1;
         protected const int ViewTypeTask = ViewTypeContent + 2;
-        protected const int ViewTypeUsedProject = ViewTypeContent + 3;
-        protected const int ViewTypeHeading = ViewTypeContent + 4;
+        protected const int ViewTypeTopProjects = ViewTypeContent + 3;
 
         protected ProjectsCollection collectionView;
+        protected ProjectListViewModel viewModel;
         public Action<CommonData> HandleItemSelection { get; set; }
 
-        public ProjectListAdapter (RecyclerView owner, ProjectsCollection collectionView) : base (owner, collectionView)
+        public ProjectListAdapter (RecyclerView owner, ProjectListViewModel viewModel) : base (owner, viewModel.ProjectList)
         {
-            this.collectionView = collectionView;
+            this.viewModel = viewModel;
+            collectionView = viewModel.ProjectList;
         }
 
         protected override RecyclerView.ViewHolder GetViewHolder (ViewGroup parent, int viewType)
@@ -36,6 +39,10 @@ namespace Toggl.Joey.UI.Adapters
             var inflater = LayoutInflater.FromContext (ServiceContainer.Resolve<Context> ());
 
             switch (viewType) {
+            case ViewTypeTopProjects:
+                view = inflater.Inflate (Resource.Layout.ProjectListMostUsedList, parent, false);
+                holder = new TopProjectsHolder (this, view);
+                break;
             case ViewTypeClient:
                 view = inflater.Inflate (Resource.Layout.ProjectListClientItem, parent, false);
                 holder = new ClientItemHolder (view);
@@ -43,14 +50,6 @@ namespace Toggl.Joey.UI.Adapters
             case ViewTypeTask:
                 view = inflater.Inflate (Resource.Layout.ProjectListTaskItem, parent, false);
                 holder = new TaskItemHolder (this, view);
-                break;
-            case ViewTypeUsedProject:
-                view = inflater.Inflate (Resource.Layout.ProjectListUsedProjectItem, parent, false);
-                holder = new ProjectItemHolder (this, view);
-                break;
-            case ViewTypeHeading:
-                view = inflater.Inflate (Resource.Layout.ProjectListHeaderItem, parent, false);
-                holder = new HeaderHolder (view);
                 break;
             default:
                 view = inflater.Inflate (Resource.Layout.ProjectListProjectItem, parent, false);
@@ -64,38 +63,29 @@ namespace Toggl.Joey.UI.Adapters
         {
             var viewType = GetItemViewType (position);
 
-            if (viewType == ViewTypeTask) {
-                ((TaskItemHolder) holder).Bind ((TaskData)GetItem (position));
+            if (viewType == ViewTypeTopProjects) {
+                ((TopProjectsHolder)holder).Bind (viewModel.MostUsedProjects);
+            } else if (viewType == ViewTypeTask) {
+                ((TaskItemHolder)holder).Bind ((TaskData)GetItem (position - 1));
             } else if (viewType == ViewTypeClient) {
-                ((ClientItemHolder) holder).Bind (((ClientData)GetItem (position)).Name);
-            } else if (viewType == ViewTypeHeading) {
-                ((HeaderHolder) holder).Bind (((ProjectsCollection.Heading)GetItem (position)).Text);
+                ((ClientItemHolder)holder).Bind (((ClientData)GetItem (position - 1)).Name);
             } else if (viewType == ViewTypeProject) {
                 var showClientName = collectionView.SortBy == ProjectsCollection.SortProjectsBy.Projects;
-                ((ProjectItemHolder) holder).Bind ((ProjectsCollection.CommonProjectData)GetItem (position), showClientName);
-            } else if (viewType == ViewTypeUsedProject) {
-                var showClientName = collectionView.SortBy == ProjectsCollection.SortProjectsBy.Projects;
-                ((ProjectItemHolder) holder).Bind ((ProjectsCollection.CommonProjectData)GetItem (position), showClientName);
+                ((ProjectItemHolder)holder).Bind ((ProjectsCollection.SuperProjectData)GetItem (position - 1), showClientName);
             }
         }
 
-        public override int GetItemViewType (int position) //TODO: refactor
+        public override int GetItemViewType (int position)
         {
-            var type = base.GetItemViewType (position);
+            if (position == 0) {
+                return ViewTypeTopProjects;
+            }
+            var type = base.GetItemViewType (position - 1);
 
             if (type == ViewTypeLoaderPlaceholder) {
                 return type;
             }
-
-            var dataObject = GetItem (position);
-
-            if (dataObject is ProjectsCollection.Heading) {
-                return ViewTypeHeading;
-            }
-
-            if (dataObject is ProjectsCollection.UsedProjectData) {
-                return ViewTypeUsedProject;
-            }
+            var dataObject = GetItem (position - 1);
 
             if (dataObject is ProjectsCollection.SuperProjectData) {
                 return ViewTypeProject;
@@ -111,17 +101,80 @@ namespace Toggl.Joey.UI.Adapters
             return type;
         }
 
+        public override int ItemCount
+        {
+            get {
+                return base.ItemCount + 1;
+            }
+        }
         #region View holders
+
+        public class TopProjectsHolder :  RecyclerView.ViewHolder
+        {
+            readonly TextView HeaderTextView;
+            readonly LinearLayout ProjectsContainer;
+            private List<LinearLayout> ProjectListLayouts;
+
+            private ViewGroup parent;
+            private View Root;
+
+            private ProjectListAdapter adapter;
+
+            public TopProjectsHolder (ProjectListAdapter adapter, View root) : base (root)
+            {
+                this.adapter = adapter;
+                HeaderTextView = root.FindViewById<TextView> (Resource.Id.HeaderTextView).SetFont (Font.RobotoMedium);
+                ProjectsContainer = root.FindViewById<LinearLayout> (Resource.Id.ProjectsContainer);
+            }
+
+            public void Bind (List<CommonProjectData> projects)
+            {
+                HeaderTextView.Visibility = projects.Count == 0 ? ViewStates.Gone : ViewStates.Visible;
+                ProjectsContainer.Visibility = projects.Count == 0 ? ViewStates.Gone : ViewStates.Visible;
+
+                ProjectsContainer.RemoveAllViews ();
+                var inflater = LayoutInflater.FromContext (ServiceContainer.Resolve<Context> ());
+                foreach (var project in projects) {
+
+                    var view = inflater.Inflate (Resource.Layout.ProjectListUsedProjectItem, parent, false);
+
+                    var projectTextView = view.FindViewById<TextView> (Resource.Id.ProjectTextView);
+                    var clientTextView = view.FindViewById<TextView> (Resource.Id.ClientTextView);
+                    var taskTextView = view.FindViewById<TextView> (Resource.Id.TaskTextView);
+                    var colorView = view.FindViewById<View> (Resource.Id.ColorView);
+
+                    projectTextView.Text = project.Name;
+                    clientTextView.Visibility = String.IsNullOrEmpty (project.ClientName) ? ViewStates.Gone : ViewStates.Visible;
+                    clientTextView.Text = project.ClientName;
+
+                    taskTextView.Text = project.Task == null ? String.Empty : project.Task.Name;
+
+                    var color = Color.ParseColor (ProjectModel.HexColors [project.Color % ProjectModel.HexColors.Length]);
+                    colorView.SetBackgroundColor (color);
+                    projectTextView.SetTextColor (color);
+
+                    view.Click += (sender, e) => {
+                        if (project.Task == null) {
+                            adapter.HandleItemSelection.Invoke (project);
+                        } else {
+                            adapter.HandleItemSelection.Invoke (project.Task);
+                        }
+                    };
+                    ProjectsContainer.AddView (view);
+                }
+            }
+        }
+
         protected class ProjectItemHolder : RecyclerView.ViewHolder, View.IOnClickListener
         {
             protected View ColorView { get; private set; }
             protected TextView ProjectTextView { get; private set; }
             protected TextView ClientTextView { get; private set; }
-            protected ImageButton TasksButton { get; private set; }
+            protected Button TasksButton { get; private set; }
             protected ImageView TasksImageView { get; private set; }
 
             private ProjectListAdapter adapter;
-            private ProjectsCollection.CommonProjectData projectData;
+            private ProjectsCollection.SuperProjectData projectData;
 
             public ProjectItemHolder (ProjectListAdapter adapter, View root) : base (root)
             {
@@ -129,7 +182,7 @@ namespace Toggl.Joey.UI.Adapters
                 ColorView = root.FindViewById<View> (Resource.Id.ColorView);
                 ProjectTextView = root.FindViewById<TextView> (Resource.Id.ProjectTextView).SetFont (Font.Roboto);
                 ClientTextView = root.FindViewById<TextView> (Resource.Id.ClientTextView).SetFont (Font.RobotoLight);
-                TasksButton = root.FindViewById<ImageButton> (Resource.Id.TasksButton);
+                TasksButton = root.FindViewById<Button> (Resource.Id.TasksButton);
                 TasksButton.Click += (sender, e) => adapter.collectionView.AddTasks (projectData);
                 root.SetOnClickListener (this);
             }
@@ -145,7 +198,7 @@ namespace Toggl.Joey.UI.Adapters
                 }
             }
 
-            public void Bind (ProjectsCollection.CommonProjectData projectData, bool showClient)
+            public void Bind (ProjectsCollection.SuperProjectData projectData, bool showClient)
             {
                 this.projectData = projectData;
 
@@ -207,7 +260,7 @@ namespace Toggl.Joey.UI.Adapters
 
             public ClientItemHolder (View root) : base (root)
             {
-                clientTextView = root.FindViewById<TextView> (Resource.Id.ClientTextView).SetFont (Font.RobotoMedium);
+                clientTextView = root.FindViewById<TextView> (Resource.Id.ClientTextView).SetFont (Font.Roboto);
 
             }
 

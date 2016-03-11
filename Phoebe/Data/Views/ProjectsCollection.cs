@@ -13,7 +13,6 @@ namespace Toggl.Phoebe.Data.Views
     {
         private List<ClientData> clients;
         private List<SuperProjectData> projects;
-        private List<UsedProjectData> mostUsedProjects;
         private List<TaskData> tasks;
         private SortProjectsBy sortBy;
         private Guid workspaceId;
@@ -51,11 +50,6 @@ namespace Toggl.Phoebe.Data.Views
                                                v.clients.FirstOrDefault (c => c.Id == p.ClientId),
                                                v.tasks.Count (t => t.ProjectId == p.Id))
                                                     ).ToList ();
-            v.mostUsedProjects = mostUsedProjectsTask.Result.Select (p =>
-                                 new UsedProjectData (p,
-                                         v.clients.FirstOrDefault (c => c.Id == p.ClientId),
-                                         v.tasks.Count (t => t.ProjectId == p.Id))
-                                                                    ).ToList ();
             // Create collection
             v.CreateSortedCollection (v.projects);
             return v;
@@ -108,13 +102,6 @@ namespace Toggl.Phoebe.Data.Views
             var enumerable = projectList as IList<SuperProjectData> ?? projectList.ToList ();
             var data = new List<CommonData> ();
 
-            // Add most used projects on top of the list.
-            var mostUsed = mostUsedProjects.Where (p => p.WorkspaceId == workspaceId).Take (5).ToList();
-            if (mostUsed.Count > 0 && enumerable.Count > 8) { // only add if more than 8 projects total
-                data.Add (new Heading ());
-                data.AddRange (mostUsed);
-            }
-
             // TODO: Maybe group using linq is clearer
             if (sortBy == SortProjectsBy.Clients) {
 
@@ -156,39 +143,18 @@ namespace Toggl.Phoebe.Data.Views
             }
         }
 
-
-        public class CommonProjectData : ProjectData
+        public class SuperProjectData : ProjectData
         {
             public string ClientName { get; private set; }
             public int TaskNumber { get; private set; }
             public bool IsEmpty { get; private set; }
 
-            public CommonProjectData (ProjectData dataObject,
-                                      ClientData client, int taskNumber, bool isEmpty = false) : base (dataObject)
+            public SuperProjectData (ProjectData dataObject,
+                                     ClientData client, int taskNumber, bool isEmpty = false) : base (dataObject)
             {
                 TaskNumber = taskNumber;
                 IsEmpty = isEmpty;
                 ClientName = client != null ? client.Name : "";
-            }
-        }
-
-        public class SuperProjectData : CommonProjectData
-        {
-            public SuperProjectData (ProjectData d, ClientData c, int n, bool e = false) : base (d, c, n, e) {}
-        }
-
-        public class UsedProjectData : CommonProjectData
-        {
-            public UsedProjectData (ProjectData d, ClientData c, int n, bool e = false) : base (d, c, n, e) {}
-        }
-
-        public class Heading : CommonData
-        {
-            public string Text { get; private set; }
-
-            public Heading (string text = null)
-            {
-                Text = text;
             }
         }
 
